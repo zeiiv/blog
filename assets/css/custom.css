@@ -1,0 +1,8 @@
+body.skin--noirbloom .page__hero--overlay::before {
+  background: red !important;
+}
+
+body.skin--noirbloom .page__hero {
+  border: 4px dashed yellow !important;
+}
+

@@ -1,0 +1,8 @@
+home.html
+site.locale to page.locale
+
+default.html
+site.rtl to page.rtl
+
+single.html
+pagination disable with no_pagination = true

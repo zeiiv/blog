@@ -5,34 +5,54 @@
     <div class="masthead__menu">
       <nav id="site-nav" class="greedy-nav">
         {% unless logo_path == empty %}
-          <a class="site-logo" href="{{ '/' | relative_url }}"><img src="{{ logo_path | relative_url }}" alt="{{ site.masthead_title | default: site.title }}"></a>
+        <a class="site-logo" href="{{ '/' | relative_url }}"><img src="{{ logo_path | relative_url }}"
+            alt="{{ site.masthead_title | default: site.title }}"></a>
         {% endunless %}
         <a class="site-title" href="{{ '/' | relative_url }}">
           {{ site.masthead_title | default: site.title }}
           {% if site.subtitle %}<span class="site-subtitle">{{ site.subtitle }}</span>{% endif %}
         </a>
+        {% assign lang = page.locale | default: 'en' %}
+        {% assign nav_links = site.data.navigation.main[lang] %}
         <ul class="visible-links">
-          {%- for link in site.data.navigation.main -%}
-            <li class="masthead__menu-item">
-              <a
-                href="{{ link.url | relative_url }}"
-                {% if link.description %} title="{{ link.description }}"{% endif %}
-                {% if link.target %} target="{{ link.target }}"{% endif %}
-              >{{ link.title }}</a>
-            </li>
+          {%- for link in nav_links -%}
+          <li class="masthead__menu-item">
+            <a href="{{ link.url | relative_url }}" {% if link.description %} title="{{ link.description }}" {% endif %}
+              {% if link.target %} target="{{ link.target }}" {% endif %}>{{ link.title }}</a>
+          </li>
           {%- endfor -%}
         </ul>
+        {% if lang == "he" %}
+          <li>
+              <a class="btn btn--inverse btn--small" href="LANG_SWITCH_EN">English</a>
+          </li>
+        {% else %}
+          <li>
+              <a class="btn btn--inverse btn--small" href="LANG_SWITCH_HE">עברית</a>
+          </li>
+        {% endif %}
         {% if site.search == true %}
         <button class="search__toggle" type="button">
-          <span class="visually-hidden">{{ site.data.ui-text[site.locale].search_label | default: "Toggle search" }}</span>
+          <span class="visually-hidden">{{ site.data.ui-text[page.locale].search_label | default: "Toggle search"
+            }}</span>
           <i class="fas fa-search"></i>
         </button>
         {% endif %}
         <button class="greedy-nav__toggle hidden" type="button">
-          <span class="visually-hidden">{{ site.data.ui-text[site.locale].menu_label | default: "Toggle menu" }}</span>
+          <span class="visually-hidden">{{ site.data.ui-text[page.locale].menu_label | default: "Toggle menu" }}</span>
           <div class="navicon"></div>
         </button>
         <ul class="hidden-links hidden"></ul>
+        <ul class="social-links">
+          {% for social in site.social %}
+          <li class="social-link">
+            <a href="{{ social.url | relative_url }}" target="_blank" rel="noopener noreferrer"
+              aria-label="{{ social.name }}">
+              <i class="fab fa-{{ social.icon }}"></i>
+            </a>
+          </li>
+          {% endfor %}
+        </ul>
       </nav>
     </div>
   </div>

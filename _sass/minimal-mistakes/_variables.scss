@@ -91,22 +91,25 @@ $h-size-6: 1em !default; // ~16px
    Colors
    ========================================================================== */
 
+
+/* Grays (unchanged, optional to adjust) */
 $gray: #7a8288 !default;
 $dark-gray: mix(#000, $gray, 50%) !default;
 $darker-gray: mix(#000, $gray, 60%) !default;
 $light-gray: mix(#fff, $gray, 50%) !default;
 $lighter-gray: mix(#fff, $gray, 90%) !default;
 
-$background-color: #fff !default;
-$code-background-color: #fafafa !default;
-$code-background-color-dark: $light-gray !default;
-$text-color: $dark-gray !default;
+/* Noir Bloom Theme Colors */
+$background-color: #0e0d11 !default;
+$code-background-color: mix(#000, $background-color, 10%) !default;
+$code-background-color-dark: mix(#000, $background-color, 15%) !default;
+$text-color: #f2ecf9 !default;
 $muted-text-color: mix(#fff, $text-color, 20%) !default;
-$border-color: $lighter-gray !default;
-$form-background-color: $lighter-gray !default;
-$footer-background-color: $lighter-gray !default;
+$border-color: mix(#fff, $background-color, 10%) !default;
+$form-background-color: mix(#000, $background-color, 12%) !default;
+$footer-background-color: mix(#d741a7, #000, 15%) !default;
 
-$primary-color: #6f777d !default;
+$primary-color: #d741a7 !default;
 $success-color: #3fa63f !default;
 $warning-color: #d67f05 !default;
 $danger-color: #ee5f5b !default;
@@ -114,13 +117,13 @@ $info-color: #3b9cba !default;
 $focus-color: $primary-color !default;
 $active-color: mix(#fff, $primary-color, 80%) !default;
 
-/* YIQ color contrast */
+/* YIQ contrast settings (unchanged) */
 $yiq-contrasted-dark-default: $dark-gray !default;
 $yiq-contrasted-light-default: #fff !default;
 $yiq-contrasted-threshold: 175 !default;
 $yiq-debug: false !default;
 
-/* brands */
+/* Social & brand colors (unchanged section) */
 $behance-color: #1769ff !default;
 $bitbucket-color: #205081 !default;
 $bluesky-color: #1083fe !default;
@@ -147,17 +150,17 @@ $vine-color: #00bf8f !default;
 $youtube-color: #bb0000 !default;
 $xing-color: #006567 !default;
 
-/* links */
-$link-color: mix(#000, $info-color, 20%) !default;
-$link-color-hover: mix(#000, $link-color, 25%) !default;
-$link-color-visited: mix(#fff, $link-color, 15%) !default;
-$masthead-link-color: $primary-color !default;
-$masthead-link-color-hover: mix(#000, $primary-color, 25%) !default;
-$navicon-link-color-hover: mix(#fff, $primary-color, 75%) !default;
+/* Link styles */
+$link-color: $primary-color !default;
+$link-color-hover: mix(#fff, $link-color, 15%) !default;
+$link-color-visited: mix(#000, $link-color, 25%) !default;
+$masthead-link-color: $text-color !default;
+$masthead-link-color-hover: mix($primary-color, #fff, 20%) !default;
+$navicon-link-color-hover: mix(#fff, $primary-color, 40%) !default;
 
-/* notices */
-$notice-background-mix: 80% !default;
-$code-notice-background-mix: 90% !default;
+/* Notices */
+$notice-background-mix: 92% !default;
+$code-notice-background-mix: 96% !default;
 
 /* syntax highlighting (base16) */
 $base00: #263238 !default;

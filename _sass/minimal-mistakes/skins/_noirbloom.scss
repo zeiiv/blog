@@ -1,0 +1,93 @@
+/* ==========================================================================
+   Noir Bloom skin — Dark mode, media-focused
+   ========================================================================== */
+
+/* Base Colors */
+$background-color: #0e0d11 !default; // Deep neutral black-purple
+$text-color: #e6dffc !default; // Slightly warmer and softer for better contrast
+
+/* Accents */
+$primary-color: #d741a7 !default;    // Bloom pink (vibrant, modern, confident)
+$border-color: mix(#fff, $background-color, 10%) !default;
+
+/* UI Surfaces */
+$code-background-color: mix(#000, $background-color, 10%) !default;
+$code-background-color-dark: mix(#000, $background-color, 15%) !default;
+$form-background-color: mix(#000, $background-color, 12%) !default;
+$footer-background-color: mix($primary-color, #000, 15%) !default;
+
+/* Typography Links */
+$link-color: $primary-color !default;
+$link-color-hover: mix(#fff, $link-color, 15%) !default;
+$link-color-visited: mix(#000, $link-color, 25%) !default;
+
+$masthead-link-color: $text-color !default;
+$masthead-link-color-hover: mix($primary-color, #fff, 20%) !default;
+$navicon-link-color-hover: mix(#fff, $primary-color, 40%) !default;
+
+/* Notices (e.g., callouts or banners) */
+$notice-background-mix: 92% !default;
+$code-notice-background-mix: 96% !default;
+
+/* Social Icons */
+.author__urls.social-icons i,
+.author__urls.social-icons .svg-inline--fa,
+.page__footer-follow .social-icons i,
+.page__footer-follow .social-icons .svg-inline--fa {
+  color: #ff69b4; // Unified vibrant pink for social icons
+
+  &:hover {
+    color: mix(#fff, #ff69b4, 30%);
+  }
+}
+
+/* Pagination */
+.pagination--pager {
+  color: $text-color;
+  background-color: $primary-color;
+  border-color: transparent;
+
+  &:visited {
+    color: $text-color;
+  }
+}
+
+/* Search box */
+.ais-search-box .ais-search-box--input {
+  background-color: $form-background-color;
+}
+// Heading color rules
+h2, .h2 {
+  color: #ff5fc0;
+}
+
+h3, .h3 {
+  color: #db66ff;
+}
+
+h4, .h4 {
+  color: #7f90f9;
+}
+
+h5, .h5 {
+  color: mix(#f2ecf9, #7f90f9, 60%);
+}
+
+h6, .h6 {
+  color: mix(#f2ecf9, #7f90f9, 30%);
+}
+
+// TEST
+
+body.skin--noirbloom {
+  .page__hero {
+    outline: 4px dashed hotpink !important;
+  }
+
+  .page__title::after {
+    content: " — SKIN ACTIVE";
+    color: lime;
+    font-size: 0.6em;
+    margin-left: 0.5em;
+  }
+}

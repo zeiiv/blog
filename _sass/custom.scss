@@ -1,43 +1,28 @@
 /* _sass/custom.scss */
 
 /*
- * STEP 1: Forcefully disable any default intro animations on key page elements.
- * This is the crucial new part. It should stop the animation that happens
- * on every page load.
+ * ROOT CAUSE FIX:
+ * The Minimal Mistakes theme uses an animation called "intro" on every page load.
+ * The following rules override that animation and replace it with an empty one,
+ * effectively disabling the unwanted default page-load animation.
 */
-/*
- * STEP 1: Forcefully disable any default intro animations on key page elements.
- * This is the crucial new part. It should stop the animation that happens
- * on every page load.
-*/
-.masthead,
-.navigation,
-.page,
-.footer,
-.search,
-.initial-content {
-  animation: none !important;
-  -webkit-animation: none !important;
-}
+@-webkit-keyframes intro { }
+@keyframes intro { }
 
 /*
- * STEP 2: Define our desired fade-in animation.
+ * DEFINE OUR OWN ANIMATION:
+ * This is the animation we WANT to see, but only on language change.
 */
 @keyframes fadeInOnLangChange {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 /*
- * STEP 3: Selectively re-apply an animation ONLY when our script adds the
- * 'page-is-changing-language' class to the body. Because this CSS rule
- * is more specific, it will override the 'animation: none' rule above.
+ * APPLY OUR ANIMATION:
+ * This uses the class our script will add to apply our custom animation.
 */
-body.page-is-changing-language #main {
-  animation: fadeInOnLangChange 0.5s ease-in forwards !important;
-  -webkit-animation: fadeInOnLangChange 0.5s ease-in forwards !important;
+.lang-change-animation .initial-content {
+  /* Note: We can add !important here as a final guarantee it will apply. */
+  animation: fadeInOnLangChange 0.4s ease-in !important;
 }

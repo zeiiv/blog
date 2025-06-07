@@ -1,10 +1,20 @@
-/* Custom animation for language change */
+/* _sass/custom.scss */
+
 @keyframes fadeInPage {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-/* Apply the animation when our JS adds the trigger class to the body */
+/*
+ * This rule applies our animation to the main content area
+ * ONLY when the body has the class 'page-is-changing-language'.
+*/
 body.page-is-changing-language .initial-content {
-  animation: fadeInPage 0.5s ease-in forwards;
+  animation: fadeInPage 0.5s ease-in-out forwards;
 }

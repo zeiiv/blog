@@ -31,7 +31,37 @@
       </footer>
     </div>
     <script>
-   </script>
-   {% include scripts.html %}
+      document.addEventListener("DOMContentLoaded", function() {
+        // This script adds a fade-in animation when the language changes.
+        // To debug, open your browser's developer console (F12).
+        console.log("Language animation script loaded.");
+
+        const langMatch = document.body.className.match(/lang--(\w+)/);
+        if (!langMatch) {
+          console.error("Debug: Could not find a 'lang--...' class on the <body> tag.");
+          return;
+        }
+
+        const currentLang = langMatch[1];
+        const lastLang = localStorage.getItem('pageLanguage');
+
+        console.log("Debug: Current language is '" + currentLang + "'.");
+        console.log("Debug: Previously stored language was '" + lastLang + "'.");
+
+        if (lastLang && currentLang !== lastLang) {
+          console.log("Language has changed! Applying fade-in animation.");
+          document.body.classList.add('page-is-changing-language');
+        } else if (!lastLang) {
+          console.log("Debug: No previous language stored. This is likely the first visit.");
+        } else {
+          console.log("Debug: Language is the same. No animation needed.");
+        }
+
+        // Store the current language for the next page load.
+        localStorage.setItem('pageLanguage', currentLang);
+      });
+    </script>
+    {% include scripts.html %}
+    {% include scripts.html %}
   </body>
 </html>

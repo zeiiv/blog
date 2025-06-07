@@ -1,20 +1,34 @@
 /* _sass/custom.scss */
 
-@keyframes fadeInPage {
+/*
+ * STEP 1: Forcefully disable any default intro animations on key page elements.
+ * This is the crucial new part. It should stop the animation that happens
+ * on every page load.
+*/
+.masthead,
+.page,
+.footer,
+.initial-content {
+  animation: none !important;
+}
+
+/*
+ * STEP 2: Define our desired fade-in animation.
+*/
+@keyframes fadeInOnLangChange {
   from {
     opacity: 0;
-    transform: translateY(10px);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
   }
 }
 
 /*
- * This rule applies our animation to the main content area
- * ONLY when the body has the class 'page-is-changing-language'.
+ * STEP 3: Selectively re-apply an animation ONLY when our script adds the
+ * 'page-is-changing-language' class to the body. Because this CSS rule
+ * is more specific, it will override the 'animation: none' rule above.
 */
 body.page-is-changing-language .initial-content {
-  animation: fadeInPage 0.5s ease-in-out forwards;
+  animation: fadeInOnLangChange 0.5s ease-in forwards !important;
 }

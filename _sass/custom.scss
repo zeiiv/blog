@@ -1,5 +1,3 @@
-/* _sass/custom.scss */
-
 /*
  * ROOT CAUSE FIX:
  * The Minimal Mistakes theme uses an animation called "intro" on every page load.
@@ -20,9 +18,9 @@
 
 /*
  * APPLY OUR ANIMATION:
- * This uses the class our script will add to apply our custom animation.
+ * This uses the class 'page-is-changing-language' that your lang-fade.js
+ * script adds to the body, applying our custom animation to the main content.
 */
-.lang-change-animation .initial-content {
-  /* Note: We can add !important here as a final guarantee it will apply. */
-  animation: fadeInOnLangChange 0.4s ease-in !important;
+body.page-is-changing-language .initial-content {
+  animation: fadeInOnLangChange 0.5s ease-in !important;
 }

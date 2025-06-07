@@ -9,7 +9,7 @@ read_time: true
 toc: true
 toc_sticky: true
 header:
-  image: /assets/images/sample-header.jpg
+  image: /assets/images/unsplash-image-1.jpg
   caption: "Photo by [Unsplash](https://unsplash.com)"
 ---
 

@@ -9,7 +9,9 @@
     {% include head/custom.html %}
   </head>
 
-  <body class="layout--{{ page.layout | default: layout.layout }} skin--{{ site.skin }}{% if page.classes or layout.classes %}{{ page.classes | default: layout.classes | join: ' ' | prepend: ' ' }}{% endif %}" dir="{% if page.rtl %}rtl{% else %}ltr{% endif %}">
+<!-- Adds dynamic language class to support fade-in animation on language switch -->
+<!-- Replaced site.rtl with page.rtl to set text direction by individual page -->
+  <body class="layout--{{ page.layout | default: layout.layout }} skin--{{ site.minimal_mistakes_skin | default: 'default' }} lang--{{ page.lang | default: site.lang }}{% if page.classes or layout.classes %}{{ page.classes | default: layout.classes | join: ' ' | prepend: ' ' }}{% endif %}" dir="{% if page.rtl %}rtl{% else %}ltr{% endif %}"></body>
     {% include_cached skip-links.html %}
     {% include_cached masthead.html %}
 
@@ -31,6 +33,23 @@
       </footer>
     </div>
 
+   
+    <!-- Trigger fade-in animation when switching languages only -->
+   <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const langMatch = document.body.className.match(/lang--(\w+)/);
+        const currentLang = langMatch ? langMatch[1] : null;
+        const previousLang = localStorage.getItem('lastLang');
+
+        if (currentLang && previousLang && currentLang !== previousLang) {
+          document.body.classList.add('fade-in-down');
+        }
+
+        if (currentLang) {
+          localStorage.setItem('lastLang', currentLang);
+        }
+      });
+    </script>
     {% include scripts.html %}
   </body>
 </html>

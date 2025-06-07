@@ -2,6 +2,14 @@
    Noir Bloom skin — Dark mode, media-focused
    ========================================================================== */
 
+@import "minimal-mistakes/variables";
+@import "minimal-mistakes/animations";
+
+/* Fonts */
+  
+$global-font-family: 'rubik', sans-serif !default;
+$heading-font-family: 'rubik', sans-serif !default;
+
 /* Base Colors */
 $background-color: #0e0d11 !default; // Deep neutral black-purple
 $text-color: #e6dffc !default; // Slightly warmer and softer for better contrast
@@ -29,6 +37,15 @@ $navicon-link-color-hover: mix(#fff, $primary-color, 40%) !default;
 $notice-background-mix: 92% !default;
 $code-notice-background-mix: 96% !default;
 
+/* Intro transition only on language switch */
+.masthead, .navigation, .page, .footer, .search, .initial-content
+{ animation: none !important; animation: none !important; -webkit-animation: none !important; }
+.fade-in-down .masthead, .fade-in-down .navigation, .fade-in-down .page, .fade-in-down .footer,
+.fade-in-down .search, .fade-in-down .initial-content { animation: $intro-transition; }
+.fade-in-down .masthead { animation-delay: 0.15s; }
+.fade-in-down .navigation { animation-delay: 0.2s; }
+.fade-in-down .page { animation-delay: 0.25s; }
+.fade-in-down .footer { animation-delay: 0.3s; }
 /* Social Icons */
 .author__urls.social-icons i,
 .author__urls.social-icons .svg-inline--fa,
@@ -56,7 +73,9 @@ $code-notice-background-mix: 96% !default;
 .ais-search-box .ais-search-box--input {
   background-color: $form-background-color;
 }
-// Heading color rules
+
+// Headings color rules
+
 h2, .h2 {
   color: #ff5fc0;
 }
@@ -77,17 +96,70 @@ h6, .h6 {
   color: mix(#f2ecf9, #7f90f9, 30%);
 }
 
-// TEST
+// Page title and lead text 
 
 body.skin--noirbloom {
-  .page__hero {
-    outline: 4px dashed hotpink !important;
+  .page__title, .page__title a {
+    color: #ff5fc0;
+    font-weight: bold;
   }
-
-  .page__title::after {
-    content: " — SKIN ACTIVE";
-    color: lime;
-    font-size: 0.6em;
-    margin-left: 0.5em;
+  .page__lead, {
+    color: #e6dffc;
   }
 }
+
+// Transparent masthead
+
+body.skin--noirbloom .masthead {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 10;
+  background: transparent;
+  box-shadow: none;
+  border-width: 0;
+  .greedy-nav {
+    background: transparent !important;
+    box-shadow: none;
+  }
+}
+
+body.skin--noirbloom .page__hero {
+  padding-top: 8rem; // adjust to match masthead height
+  position: relative;
+  z-index: 1;
+}
+
+body.skin--noirbloom .page__inner-wrap {
+  margin-top: 6rem;
+}
+
+// Page footer styles
+
+body.skin--noirbloom .page__footer-follow {
+  color: #e4dcff; // or any other color you prefer
+
+  a {
+    color: #e4dcff;
+
+    &:hover {
+      color: mix(#fff, #ff69b4, 30%);
+      text-decoration-line: none;
+    }
+  }
+}
+
+/* Fonts */
+body.skin--noirbloom {
+  font-family: 'rubik', system-ui, sans-serif;
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'rubik', system-ui, sans-serif;
+  }
+}
+
+/* Selection styles */
+body.skin--noirbloom ::selection { background: #955c89; color: #f3ecff }
+body.skin--noirbloom ::-moz-selection { background: #955c89; color: #f3ecff }
+

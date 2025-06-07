@@ -38,14 +38,19 @@ $notice-background-mix: 92% !default;
 $code-notice-background-mix: 96% !default;
 
 /* Intro transition only on language switch */
-.masthead, .navigation, .page, .footer, .search, .initial-content
-{ animation: none !important; animation: none !important; -webkit-animation: none !important; }
-.fade-in-down .masthead, .fade-in-down .navigation, .fade-in-down .page, .fade-in-down .footer,
-.fade-in-down .search, .fade-in-down .initial-content { animation: $intro-transition; }
+.fade-in-down .masthead, 
+.fade-in-down .navigation, 
+.fade-in-down .page, 
+.fade-in-down .footer,
+.fade-in-down .search, 
+.fade-in-down .initial-content { 
+  animation: intro 0.3s both; 
+}
 .fade-in-down .masthead { animation-delay: 0.15s; }
 .fade-in-down .navigation { animation-delay: 0.2s; }
 .fade-in-down .page { animation-delay: 0.25s; }
 .fade-in-down .footer { animation-delay: 0.3s; }
+
 /* Social Icons */
 .author__urls.social-icons i,
 .author__urls.social-icons .svg-inline--fa,
@@ -162,4 +167,3 @@ body.skin--noirbloom {
 /* Selection styles */
 body.skin--noirbloom ::selection { background: #955c89; color: #f3ecff }
 body.skin--noirbloom ::-moz-selection { background: #955c89; color: #f3ecff }
-

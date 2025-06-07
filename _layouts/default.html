@@ -9,9 +9,7 @@
     {% include head/custom.html %}
   </head>
 
-<!-- Adds dynamic language class to support fade-in animation on language switch -->
-<!-- Replaced site.rtl with page.rtl to set text direction by individual page -->
-  <body class="layout--{{ page.layout | default: layout.layout }} skin--{{ site.minimal_mistakes_skin | default: 'default' }} lang--{{ page.lang | default: site.lang }}{% if page.classes or layout.classes %}{{ page.classes | default: layout.classes | join: ' ' | prepend: ' ' }}{% endif %}" dir="{% if page.rtl %}rtl{% else %}ltr{% endif %}"></body>
+<body class="layout--{{ page.layout | default: layout.layout }} skin--{{ site.minimal_mistakes_skin | default: 'default' }} lang--{{ page.lang | default: site.lang }}{% if page.classes or layout.classes %}{{ page.classes | default: layout.classes | join: ' ' | prepend: ' ' }}{% endif %}" dir="{% if page.rtl %}rtl{% else %}ltr{% endif %}"></body>
     {% include_cached skip-links.html %}
     {% include_cached masthead.html %}
 
@@ -34,8 +32,7 @@
     </div>
 
    
-    <!-- Trigger fade-in animation when switching languages only -->
-   <script>
+    <script>
       document.addEventListener("DOMContentLoaded", function () {
         const langMatch = document.body.className.match(/lang--(\w+)/);
         const currentLang = langMatch ? langMatch[1] : null;
@@ -43,6 +40,11 @@
 
         if (currentLang && previousLang && currentLang !== previousLang) {
           document.body.classList.add('fade-in-down');
+          // Remove the class after the animation completes
+          // The longest animation delay is 0.3s, and the animation duration is 0.3s
+          setTimeout(function() {
+            document.body.classList.remove('fade-in-down');
+          }, 600); // 300ms animation + 300ms delay
         }
 
         if (currentLang) {

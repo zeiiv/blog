@@ -30,28 +30,6 @@
         {% include_cached footer.html %}
       </footer>
     </div>
-
-   
-    <script>
-      document.addEventListener("DOMContentLoaded", function () {
-        const langMatch = document.body.className.match(/lang--(\w+)/);
-        const currentLang = langMatch ? langMatch[1] : null;
-        const previousLang = localStorage.getItem('lastLang');
-
-        if (currentLang && previousLang && currentLang !== previousLang) {
-          document.body.classList.add('fade-in-down');
-          // Remove the class after the animation completes
-          // The longest animation delay is 0.3s, and the animation duration is 0.3s
-          setTimeout(function() {
-            document.body.classList.remove('fade-in-down');
-          }, 600); // 300ms animation + 300ms delay
-        }
-
-        if (currentLang) {
-          localStorage.setItem('lastLang', currentLang);
-        }
-      });
-    </script>
-    {% include scripts.html %}
+   {% include scripts.html %}
   </body>
 </html>

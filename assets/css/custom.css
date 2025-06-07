@@ -1,1 +1,12 @@
-/
+@keyframes fadeInAnimation {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+html.fade-in-lang-change body {
+  animation: fadeInAnimation 0.5s ease-in-out;
+}

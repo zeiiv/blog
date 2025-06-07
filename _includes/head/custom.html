@@ -1,2 +1,19 @@
 <link rel="stylesheet" href="{{ '/assets/css/custom.css' | relative_url }}">
 <l<link href="https://fonts.googleapis.com/css2?family=rubik:wght@400;700&display=swap" rel="stylesheet">
+
+<script>
+  (function() {
+    try {
+      const currentLang = document.documentElement.lang.split('-')[0];
+      const lastLang = localStorage.getItem('lastLang');
+
+      if (lastLang && currentLang !== lastLang) {
+        document.documentElement.classList.add('fade-in-lang-change');
+      }
+
+      localStorage.setItem('lastLang', currentLang);
+    } catch (e) {
+      console.error('Failed to apply language change animation:', e);
+    }
+  })();
+</script>

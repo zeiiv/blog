@@ -1,0 +1,10 @@
+/* Custom animation for language change */
+@keyframes fadeInPage {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Apply the animation when our JS adds the trigger class to the body */
+body.page-is-changing-language .initial-content {
+  animation: fadeInPage 0.5s ease-in forwards;
+}

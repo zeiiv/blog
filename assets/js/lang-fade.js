@@ -1,56 +1,57 @@
-document.addEventListener("DOMContentLoaded", function() {
-  // FINAL SCRIPT using document.referrer
-  // To debug, open your browser's developer console (F12).
-  console.log("Referrer animation script loaded.");
+document.addEventListener("DOMContentLoaded", function () {
+  // Enhanced script using document.referrer with improved edge case handling
+  console.debug("Language transition script loaded.");
 
   try {
     // 1. Get the language of the CURRENT page from the body class (e.g., 'en' or 'he')
-    const currentLangMatch = document.body.className.match(/lang--(\w+)/);
-    if (!currentLangMatch) {
-      console.error("Debug: Could not find language class on current page body.");
+    const bodyClass = document.body.className;
+    const currentLangMatch = bodyClass.match(/lang--(\w+)/);
+    const currentLang = currentLangMatch ? currentLangMatch[1] : null;
+
+    console.debug("Current page language:", currentLang);
+    if (!currentLang) {
+      console.warn("No language class found on body.");
       return;
     }
-    const currentLang = currentLangMatch[1];
-    console.log("Debug: Current page language is '" + currentLang + "'.");
 
-    // 2. Get the URL of the PREVIOUS page
+    // 2. Get the previous page URL (referrer)
     const referrerUrl = document.referrer;
-    console.log("Debug: User came from URL: '" + referrerUrl + "'.");
+    console.debug("Referrer URL:", referrerUrl);
 
-    // 3. Only proceed if the user came from a page on the same website
+    // 3. Only proceed if referrer exists and is from same origin
     if (referrerUrl && new URL(referrerUrl).hostname === window.location.hostname) {
-
-      // 4. Extract the language from the PREVIOUS page's URL path.
-      // Your URLs look like '.../en/page' or '.../he/page'.
-      // This regex looks for '/en/' or '/he/' at the start of the path.
-      const previousLangMatch = new URL(referrerUrl).pathname.match(/^\/([a-z]{2})\//);
+      const previousPath = new URL(referrerUrl).pathname;
+      let previousLang = null;
+      const previousLangMatch = previousPath.match(/^\/([a-z]{2})\//);
 
       if (previousLangMatch) {
-        const previousLang = previousLangMatch[1];
-        console.log("Debug: Previous page language was '" + previousLang + "'.");
-
-        // 5. Compare and apply animation if they are different
-        if (currentLang !== previousLang) {
-          console.log("SUCCESS: Language changed! Applying fade-in animation.");
-          document.body.classList.add('page-is-changing-language');
-        } else {
-          console.log("Debug: Language is the same. No animation needed.");
-        }
+        previousLang = previousLangMatch[1];
       } else {
-        // This happens if the previous page was the homepage (e.g., '/'), which has no /en/ or /he/ prefix.
-        // We can assume a switch from the default language if the current lang is not default.
-        const defaultLang = "en"; // Change this if your default language is different
-        if (currentLang !== defaultLang) {
-           console.log("SUCCESS: Moved from homepage to non-default language. Applying fade-in animation.");
-           document.body.classList.add('page-is-changing-language');
-        } else {
-          console.log("Debug: Could not determine language from referrer path, assuming no change.");
-        }
+        // If no language prefix, assume it's English (default)
+        previousLang = "en";
+        console.debug("No lang prefix found in referrer path, assuming default:", previousLang);
+      }
+
+      // 4. Handle the edge case: previous page was root "/" (no lang prefix)
+      if (!previousLang && previousPath === '/') {
+        const defaultLang = "en"; // Set your actual default language here
+        previousLang = defaultLang;
+        console.debug("Assuming default language for homepage referrer:", previousLang);
+      }
+
+      console.debug("Previous page language:", previousLang);
+
+      // 5. Compare and apply animation if language has changed
+      if (previousLang && currentLang !== previousLang) {
+        console.debug("Language change detected! Triggering animation.");
+        document.body.classList.add("page-is-changing-language");
+      } else {
+        console.debug("Same language or no detectable language change. No animation triggered.");
       }
     } else {
-      console.log("Debug: No valid referrer. This is an external entry or first visit. No animation.");
+      console.debug("No valid same-origin referrer. Skipping animation.");
     }
-  } catch (e) {
-    console.error("An error occurred in the animation script:", e);
+  } catch (error) {
+    console.error("Error in language transition script:", error);
   }
 });

@@ -5,13 +5,21 @@
  * This is the crucial new part. It should stop the animation that happens
  * on every page load.
 */
+/*
 .masthead,
+.navigation,
 .page,
 .footer,
+.search,
 .initial-content {
   animation: none !important;
+  -webkit-animation: none !important;
 }
 
+
+$intro-transition  : none; 
+$global-transition : none;
+*/
 /*
  * STEP 2: Define our desired fade-in animation.
 */
@@ -32,3 +40,4 @@
 body.page-is-changing-language .initial-content {
   animation: fadeInOnLangChange 0.5s ease-in forwards !important;
 }
+

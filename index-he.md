@@ -4,6 +4,9 @@ locale: he
 lang: he
 permalink: "/"
 rtl: true
+header:
+  overlay_color: #7f90f9
+  # no_text_overlay: true
 ---
 
 

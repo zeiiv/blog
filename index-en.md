@@ -3,7 +3,6 @@ layout: single
 locale: en
 lang: en
 permalink: "/"
-author_profile: true
 ---
 
 # 📝 Font Style Preview (English)

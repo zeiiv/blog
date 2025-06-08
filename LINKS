@@ -1,2 +1,24 @@
-https://www.fabriziomusacchio.com/blog/2021-08-11-Minimal_Mistakes_Cheat_Sheet/
 
+### THEME
+- [Colors](/_sass/minimal-mistakes/skins/_noirbloom.scss)
+- [Custom CSS](/_sass/minimal-mistakes/_noirbloom-custom.scss)
+
+### CONFIG
+- [Config](_config.yml)
+- [Content Text](/_data/config-text.yml)
+- [UI Text](_data/ui-text.yml)
+- [Navigation](_data/navigation.yml)
+
+### POSTS
+
+- Homepage [EN](index-en.md) [HE](index-he.md)
+- About [EN](_pages/en/about.md)  [HE](_pages/he/about.md)
+
+
+### NOTES
+
+
+zeiiv.place/holder
+zeiiv.place/ment
+zeiiv.place/of
+### URLS

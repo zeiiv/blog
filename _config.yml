@@ -16,13 +16,14 @@ teaser: # Fallback teaser image, e.g. "/assets/images/500x300.png"
 author: # Author Information _data/config-text.yml
   avatar: "/assets/images/avatar.png"
   links:
-    - icon: "fab fa-fw fa-envelope"
+    - icon: "far fa-fw fa-envelope"
       url: mailto:youremail@example.com
     - icon: "fab fa-fw fa-facebook-square"
       url: https://www.facebook.com/yourprofile
     - icon: "fab fa-fw fa-instagram"
       url: https://www.instagram.com/yourprofile
-    
+
+
 
 #       PLUGINS
 
@@ -42,7 +43,7 @@ plugins:
 footer:
   links:
     - label: "Email"
-      icon: "fab fa-fw fa-envelope"
+      icon: "fa-solid fa-fw fa-envelope"
       url: mailto:youremail@example.com
     - label: "Facebook"
       icon: "fab fa-fw fa-facebook-square"

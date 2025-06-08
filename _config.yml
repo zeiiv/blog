@@ -125,6 +125,7 @@ include:
  - _posts/en
  - _posts/he
  - assets/css/custom.css
+ - _redirects
 exclude:
   - .sass-cache/
   - .jekyll-cache/

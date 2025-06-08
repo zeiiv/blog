@@ -9,6 +9,10 @@
     {% include head/custom.html %}
   </head>
 
+{% include netlify.html %}
+<a href="#" onclick="netlifyIdentity.open()">Login</a>
+<a href="#" onclick="netlifyIdentity.logout()">Logout</a>
+
 <body class="layout--{{ page.layout | default: layout.layout }} skin--{{ site.minimal_mistakes_skin | default: 'default' }} lang--{{ page.lang | default: site.lang }}{% if page.classes or layout.classes %}{{ page.classes | default: layout.classes | join: ' ' | prepend: ' ' }}{% endif %}" dir="{% if page.rtl %}rtl{% else %}ltr{% endif %}"></body>
     {% include_cached skip-links.html %}
     {% include_cached masthead.html %}

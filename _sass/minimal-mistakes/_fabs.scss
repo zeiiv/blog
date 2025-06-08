@@ -1,32 +1,99 @@
-/* _sass/custom/_fabs.scss */
-
-.fabs-wrapper {
-  /* Core positioning */
+/* Basic FAB Styles */
+.fab-button,
+.fab-container {
   position: fixed;
-  z-index: 1000;
-
-  /* Modern logical properties for LTR/RTL */
-  inset-block-end: 25px;
-  inset-inline-end: 25px;
+  bottom: 1.5rem; /* Distance from bottom */
+  right: 1.5rem;  /* Distance from right */
+  z-index: 1000;  /* Ensure it's above other content */
+  width: 4rem;    /* Button size */
+  height: 4rem;
+  border-radius: 50%; /* Make it circular */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: var(--primary-color, #007bff); /* Use a CSS variable or a default color */
+  color: #fff;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  transition: background-color 0.3s ease, transform 0.3s ease;
+  text-decoration: none; /* For link FABs */
+  cursor: pointer;
 }
 
-a.fabs-button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 55px;
-  height: 55px;
-  border-radius: 50%;
-  background-color: #d741a7; // Your theme's primary color
-  color: white;
-  text-decoration: none;
-  font-size: 1.1em;
-  font-weight: bold;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
-  transition: transform 0.2s ease-in-out;
+.fab-button:hover,
+.fab-container:hover .main-fab {
+  background-color: var(--primary-color-dark, #0056b3); /* Darker on hover */
+  transform: translateY(-2px);
+}
 
-  &:hover {
-    transform: translateY(-2px);
-    color: white;
+.fab-button i,
+.fab-container i {
+  font-size: 1.5rem; /* Icon size */
+}
+
+/* Styles for Toggle FAB Options (if using Option B HTML) */
+.fab-container {
+  flex-direction: column; /* Stack main button and options */
+  align-items: flex-end; /* Align options to the right */
+  bottom: 1.5rem;
+  right: 1.5rem;
+  width: auto; /* Adjust width to content */
+  height: auto;
+  background: none; /* No background for the container itself */
+  box-shadow: none;
+}
+
+.fab-options {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.75rem; /* Spacing between options */
+  margin-bottom: 0.75rem; /* Space between options and main button */
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(10px);
+  transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.3s ease;
+}
+
+.fab-container.active .fab-options {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.fab-option {
+  width: 3rem; /* Smaller option size */
+  height: 3rem;
+  border-radius: 50%;
+  background-color: var(--secondary-color, #6c757d);
+  color: #fff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+  transition: background-color 0.3s ease, transform 0.3s ease;
+  text-decoration: none;
+}
+
+.fab-option:hover {
+  background-color: var(--secondary-color-dark, #545b62);
+  transform: translateY(-2px);
+}
+
+/* Basic Responsiveness (adjust as needed) */
+@media (max-width: 768px) {
+  .fab-button,
+  .fab-container {
+    width: 3.5rem;
+    height: 3.5rem;
+    bottom: 1rem;
+    right: 1rem;
+  }
+  .fab-button i,
+  .fab-container i {
+    font-size: 1.3rem;
+  }
+  .fab-option {
+    width: 2.5rem;
+    height: 2.5rem;
   }
 }

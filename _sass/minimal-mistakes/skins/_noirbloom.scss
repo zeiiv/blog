@@ -13,6 +13,7 @@ $global-transition: none;
 $background-color: #0e0d11 !default;
 $text-color: #e6dffc !default;
 $primary-color: #d741a7 !default;
+$secondary-color: #7f90f9 !default;
 $social-icon-color: #ff69b4 !default;
 
 // Selection Colors
@@ -36,11 +37,12 @@ $footer-background-color: mix($primary-color, #000, 15%) !default;
 
 // Typography
 $heading-colors: (
-  h2: #ff5fc0,
-  h3: #db66ff,
-  h4: #7f90f9,
-  h5: mix(#f2ecf9, #7f90f9, 60%),
-  h6: mix(#f2ecf9, #7f90f9, 30%)
+  h1: $primary-color,
+  h2: mix($text-color, $secondary-color, 0%),
+  h3: mix($text-color, $secondary-color, 15%),
+  h4: mix($text-color, $secondary-color, 35%),
+  h5: mix($text-color, $secondary-color, 60%),
+  h6: mix($text-color, $secondary-color, 100%)
 );
 
 /* notices */

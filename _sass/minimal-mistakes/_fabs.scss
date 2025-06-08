@@ -11,7 +11,9 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: var(--primary-color, #007bff); /* Use a CSS variable or a default color */
+background-color: rgba(var(--primary-color-rgb, 0, 123, 255), 0.7); /* Adjust opacity for glass effect */
+  backdrop-filter: blur(5px); /* Add blur effect */
+  -webkit-backdrop-filter: blur(5px); /* For Safari support */
   color: #fff;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   transition: background-color 0.3s ease, transform 0.3s ease;
@@ -28,6 +30,7 @@
 .fab-button i,
 .fab-container i {
   font-size: 1.5rem; /* Icon size */
+  
 }
 
 /* Styles for Toggle FAB Options (if using Option B HTML) */

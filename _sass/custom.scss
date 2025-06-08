@@ -1,15 +1,13 @@
 /*
  * ROOT CAUSE FIX:
- * The Minimal Mistakes theme uses an animation called "intro" on every page load.
- * The following rules override that animation and replace it with an empty one,
- * effectively disabling the unwanted default page-load animation.
+ * Disables the Minimal Mistakes theme's default "intro" animation.
 */
 @-webkit-keyframes intro { }
 @keyframes intro { }
 
 /*
- * DEFINE OUR OWN ANIMATION:
- * This is the animation we WANT to see, but only on language change.
+ * OUR CUSTOM ANIMATION:
+ * Defines the fade-in effect we want to see on language change.
 */
 @keyframes fadeInOnLangChange {
   from { opacity: 0; }
@@ -18,8 +16,8 @@
 
 /*
  * APPLY OUR ANIMATION:
- * This uses the class 'page-is-changing-language' that your lang-fade.js
- * script adds to the body, applying our custom animation to the main content.
+ * This rule looks for the 'page-is-changing-language' class that our script
+ * adds to the body and applies our custom animation.
 */
 body.page-is-changing-language .initial-content {
   animation: fadeInOnLangChange 0.5s ease-in !important;

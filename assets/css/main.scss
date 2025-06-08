@@ -4,6 +4,8 @@
 @charset "utf-8";
 
 @import "minimal-mistakes/skins/{{ site.minimal_mistakes_skin | default: 'default' }}"; // skin
+@import "minimal-mistakes/noirbloom-custom"; //  custom layout/typography
 @import "minimal-mistakes"; // main partials
+
 
 @import "custom";

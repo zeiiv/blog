@@ -2,155 +2,77 @@
    Noir Bloom skin — Dark mode, media-focused
    ========================================================================== */
 
-/* Disabling Theme's Default Transitions */
-$intro-transition  : none; 
-$global-transition : none;
+/* Variables */
+$font-family-base: 'Rubik', system-ui, sans-serif;
 
-/* Fonts */
-  
-$global-font-family: 'rubik', sans-serif !default;
-$heading-font-family: 'rubik', sans-serif !default;
+// Transitions
+$intro-transition: none;
+$global-transition: none;
 
-/* Base Colors */
-$background-color: #0e0d11 !default; // Deep neutral black-purple
-$text-color: #e6dffc !default; // Slightly warmer and softer for better contrast
+// Base Colors
+$background-color: #0e0d11 !default;
+$text-color: #e6dffc !default;
+$primary-color: #d741a7 !default;
+$social-icon-color: #ff69b4 !default;
 
-/* Accents */
-$primary-color: #d741a7 !default;    // Bloom pink (vibrant, modern, confident)
+// Selection Colors
+$selection-background: #955c89 !default;
+$selection-text: #f3ecff !default;
+
+// Links
+$link-color: $primary-color !default;
+$link-color-hover: mix(#fff, $link-color, 25%) !default;
+$link-color-visited: mix(#000, $link-color, 25%) !default;
+$masthead-link-color: $text-color !default;
+$masthead-link-color-hover: mix(#000, $text-color, 20%) !default;
+$navicon-link-color-hover: mix(#000, $background-color, 30%) !default;
+
+// Derived colors
 $border-color: mix(#fff, $background-color, 10%) !default;
-
-/* UI Surfaces */
 $code-background-color: mix(#000, $background-color, 10%) !default;
 $code-background-color-dark: mix(#000, $background-color, 15%) !default;
 $form-background-color: mix(#000, $background-color, 12%) !default;
 $footer-background-color: mix($primary-color, #000, 15%) !default;
 
-/* Typography Links */
-$link-color: $primary-color !default;
-$link-color-hover: mix(#fff, $link-color, 15%) !default;
-$link-color-visited: mix(#000, $link-color, 25%) !default;
+// Typography
+$heading-colors: (
+  h2: #ff5fc0,
+  h3: #db66ff,
+  h4: #7f90f9,
+  h5: mix(#f2ecf9, #7f90f9, 60%),
+  h6: mix(#f2ecf9, #7f90f9, 30%)
+);
 
-$masthead-link-color: $text-color !default;
-$masthead-link-color-hover: mix($primary-color, #fff, 20%) !default;
-$navicon-link-color-hover: mix(#fff, $primary-color, 40%) !default;
+/* notices */
+$notice-background-mix: 90% !default;
+$code-notice-background-mix: 95% !default;
 
-/* Notices (e.g., callouts or banners) */
-$notice-background-mix: 92% !default;
-$code-notice-background-mix: 96% !default;
+/* noir bloom syntax highlighting (base16) */
+$base00: #ffffff !default;
+$base01: #e0e0e0 !default;
+$base02: #d0d0d0 !default;
+$base03: #b0b0b0 !default;
+$base04: #000000 !default;
+$base05: #101010 !default;
+$base06: #151515 !default;
+$base07: #202020 !default;
+$base08: #ff0086 !default;
+$base09: #fd8900 !default;
+$base0a: #aba800 !default;
+$base0b: #00c918 !default;
+$base0c: #1faaaa !default;
+$base0d: #3777e6 !default;
+$base0e: #ad00a1 !default;
+$base0f: #cc6633 !default;
 
-/* Social Icons */
-.author__urls.social-icons i,
-.author__urls.social-icons .svg-inline--fa,
+// Standard Minimal Mistakes social icon/footer pattern
+.page__footer {
+  color: #fff !important;
+}
+
 .page__footer-follow .social-icons i,
-.page__footer-follow .social-icons .svg-inline--fa {
-  color: #ff69b4; // Unified vibrant pink for social icons
-
-  &:hover {
-    color: mix(#fff, #ff69b4, 30%);
-  }
+.page__footer-follow .social-icons .svg-inline--fa,
+.author__urls.social-icons i,
+.author__urls.social-icons .svg-inline--fa {
+  color: inherit;
 }
-
-/* Pagination */
-.pagination--pager {
-  color: $text-color;
-  background-color: $primary-color;
-  border-color: transparent;
-
-  &:visited {
-    color: $text-color;
-  }
-}
-
-/* Search box */
-.ais-search-box .ais-search-box--input {
-  background-color: $form-background-color;
-}
-
-// Headings color rules
-
-h2, .h2 {
-  color: #ff5fc0;
-}
-
-h3, .h3 {
-  color: #db66ff;
-}
-
-h4, .h4 {
-  color: #7f90f9;
-}
-
-h5, .h5 {
-  color: mix(#f2ecf9, #7f90f9, 60%);
-}
-
-h6, .h6 {
-  color: mix(#f2ecf9, #7f90f9, 30%);
-}
-
-// Page title and lead text 
-
-body.skin--noirbloom {
-  .page__title, .page__title a {
-    color: #ff5fc0;
-    font-weight: bold;
-  }
-  .page__lead, {
-    color: #e6dffc;
-  }
-}
-
-// Transparent masthead
-
-body.skin--noirbloom .masthead {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  z-index: 10;
-  background: transparent;
-  box-shadow: none;
-  border-width: 0;
-  .greedy-nav {
-    background: transparent !important;
-    box-shadow: none;
-  }
-}
-
-body.skin--noirbloom .page__hero {
-  padding-top: 8rem; // adjust to match masthead height
-  position: relative;
-  z-index: 1;
-}
-
-body.skin--noirbloom .page__inner-wrap {
-  margin-top: 6rem;
-}
-
-// Page footer styles
-
-body.skin--noirbloom .page__footer-follow {
-  color: #e4dcff; // or any other color you prefer
-
-  a {
-    color: #e4dcff;
-
-    &:hover {
-      color: mix(#fff, #ff69b4, 30%);
-      text-decoration-line: none;
-    }
-  }
-}
-
-/* Fonts */
-body.skin--noirbloom {
-  font-family: 'rubik', system-ui, sans-serif;
-
-  h1, h2, h3, h4, h5, h6 {
-    font-family: 'rubik', system-ui, sans-serif;
-  }
-}
-
-/* Selection styles */
-body.skin--noirbloom ::selection { background: #955c89; color: #f3ecff }
-body.skin--noirbloom ::-moz-selection { background: #955c89; color: #f3ecff }

@@ -1,0 +1,121 @@
+// Custom Noirbloom layout, typography, and spacing overrides
+// Move all custom rules here that are not just color variables
+
+/* Variables */
+$font-family-base: 'Rubik', system-ui, sans-serif;
+$caption-font-family: 'Rubik', system-ui, sans-serif !default;
+
+// Transitions
+$intro-transition: none;
+$global-transition: none;
+
+
+
+body.skin--noirbloom {
+  font-family: $font-family-base;
+
+  // Typography
+  @each $heading, $color in $heading-colors {
+    #{$heading}, .#{$heading} {
+      color: $color;
+      font-family: inherit;
+    }
+  }
+
+  .site-title,
+  .site-subtitle {
+    font-family: inherit;
+    font-weight: 400 !important;
+  }
+
+  // Font Awesome
+  .fa, .fas, .fab {
+    font-family: "Font Awesome 5 Free", "Font Awesome 5 Brands", "FontAwesome", sans-serif;
+  }
+
+  // Hero and masthead
+  .masthead {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 10;
+    background: transparent;
+    box-shadow: none;
+    border-width: 0;
+
+    .greedy-nav {
+      background: transparent !important;
+      box-shadow: none;
+      a {
+        font-family: inherit;
+      }
+    }
+  }
+  .page {
+    &__hero, &__hero--overlay {
+      padding-top: 8rem;
+      position: relative;
+      z-index: 1;
+    }
+    &__inner-wrap {
+      margin-top: 6rem;
+    }
+    &__title, &__title a {
+      color: map-get($heading-colors, h2);
+      font-weight: bold;
+      margin-top: 4em; // Change after mashead height adjustment
+    }
+    &__lead {
+      color: $text-color;
+      margin-bottom: 1.5em; // add space below subtitle
+    }
+  }
+
+  .author {
+    &__avatar {
+      margin-top: 4em;
+    }
+  }
+
+  // Pagination
+  .pagination--pager {
+    color: $text-color;
+    background-color: $primary-color;
+    border-color: transparent;
+    &:visited {
+      color: $text-color;
+    }
+  }
+
+  // Search box
+  .ais-search-box .ais-search-box--input {
+    background-color: $form-background-color;
+  }
+}
+
+
+// Custom selection background and text color
+::selection {
+  background: $selection-background;
+  color: $selection-text;
+}
+
+// Custom color for footer social icons only
+.page__footer-follow .social-icons {
+    i,
+    .svg-inline--fa {
+        color: $social-icon-color;
+        font-style: normal;
+        font-family: "Font Awesome 5 Free", "Font Awesome 5 Brands", "FontAwesome", sans-serif;
+        font-weight: 400;
+    }
+    a {
+        color: inherit;
+        font-family: inherit;
+        &:hover {
+            color: mix(#fff, $social-icon-color, 30%);
+            text-decoration: none;
+        }
+    }
+}

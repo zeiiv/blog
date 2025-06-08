@@ -1,0 +1,46 @@
+/* _sass/custom/_floating-lang-switcher.scss */
+/*
+ * Styles for the floating language switcher,
+ * revised with modern CSS logical properties.
+*/
+.language-switcher-wrapper {
+  /* Core positioning */
+  position: fixed;
+  z-index: 1000;
+
+  /*
+   * CSS Logical Properties:
+   * These automatically handle LTR and RTL layouts.
+   * 'inset-block-end' is equivalent to 'bottom'.
+   * 'inset-inline-end' is 'right' in LTR and 'left' in RTL.
+  */
+  inset-block-end: 25px !important;
+  inset-inline-end: 25px !important;
+}
+
+a.language-switcher-float {
+  /* Using CSS variables for easier theming */
+  --_button-size: 55px;
+  --_icon-size: 1.1em;
+  --_bg-color: #d741a7; /* Your theme's primary color */
+  --_text-color: white;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--_button-size);
+  height: var(--_button-size);
+  border-radius: 50%;
+  background-color: var(--_bg-color);
+  color: var(--_text-color) !important;
+  text-decoration: none !important;
+  font-size: var(--_icon-size);
+  font-weight: bold;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+  transition: transform 0.2s ease-in-out;
+
+  &:hover {
+    transform: translateY(-2px);
+    color: var(--_text-color) !important;
+  }
+}

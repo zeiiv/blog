@@ -1,5 +1,5 @@
 ---
-layout: home
+layout: single
 locale: en
 lang: en
 permalink: "/"

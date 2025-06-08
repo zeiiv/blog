@@ -1,0 +1,9 @@
+{% assign lang = page.lang | default: 'en' %}
+
+<div class="language-switcher-wrapper">
+  {% if lang == "he" %}
+    <a href="LANG_SWITCH_EN" class="language-switcher-float" aria-label="Switch to English" lang="en">EN</a>
+  {% else %}
+    <a href="LANG_SWITCH_HE" class="language-switcher-float" aria-label="Switch to Hebrew" lang="he">עב</a>
+  {% endif %}
+</div>

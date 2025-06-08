@@ -22,15 +22,6 @@
           </li>
           {%- endfor -%}
         </ul>
-        {% if lang == "he" %}
-          <li>
-              <a class="btn btn--inverse btn--small" href="LANG_SWITCH_EN">English</a>
-          </li>
-        {% else %}
-          <li>
-              <a class="btn btn--inverse btn--small" href="LANG_SWITCH_HE">עברית</a>
-          </li>
-        {% endif %}
         {% if site.search == true %}
         <button class="search__toggle" type="button">
           <span class="visually-hidden">{{ site.data.ui-text[page.locale].search_label | default: "Toggle search"

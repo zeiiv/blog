@@ -31,39 +31,7 @@
       </footer>
     </div>
     <script src="{{ '/assets/js/lang-fade.js' | relative_url }}"></script> 
-    <script> 
-    // This script adds a fade animation when the user navigates between different language pages.
-  document.addEventListener("DOMContentLoaded", function() {
-    try {
-      const currentLangMatch = document.body.className.match(/lang--(\w+)/);
-      if (!currentLangMatch) return;
-      const currentLang = currentLangMatch[1];
-      const referrerUrl = document.referrer;
-
-      // Only check for language change if the user is coming from another page on this site.
-      if (referrerUrl && new URL(referrerUrl).hostname === window.location.hostname) {
-        const previousLangMatch = new URL(referrerUrl).pathname.match(/^\/([a-z]{2})\//);
-
-        if (previousLangMatch) {
-          const previousLang = previousLangMatch[1];
-          if (currentLang !== previousLang) {
-            // If the language is different, add our animation class.
-            document.body.classList.add('lang-change-animation');
-          }
-        } else {
-          // This handles navigating from the homepage (/) to a language-specific page.
-          const defaultLang = "en"; // Change this if your default language is different.
-          if (currentLang !== defaultLang) {
-            document.body.classList.add('lang-change-animation');
-          }
-        }
-      }
-    } catch (e) {
-      console.error("Language animation script failed:", e);
-    }
-  });
-</script>
-    
     {% include scripts.html %}
+    {% include floating-lang-switcher.html %}
   </body>
 </html>

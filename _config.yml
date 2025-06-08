@@ -73,7 +73,7 @@ highlighter: rouge # Code Highlighting
 #      COLLECTIONS
 
 collections:
-  pages:
+  places:
     output: true
     localize: true
   posts:
@@ -84,17 +84,17 @@ collections:
 #   CONTENT LANGUAGE AND PERMALINKS
 
 defaults:
-  - scope: # English Pages
-      path        : "_pages/en"
-      type        : pages
+  - scope: # English places
+      path        : "_places/en"
+      type        : places
     values:
       permalink   : /:name/
       locale      : en
       lang        : en
 
   - scope: # Hebrew Pages
-      path        : "_pages/he"
-      type        : pages
+      path        : "_places/he"
+      type        : places
     values:
       permalink   : /:name/
       locale      : he

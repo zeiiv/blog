@@ -9,8 +9,10 @@ read_time: true
 toc: true
 toc_sticky: true
 header:
+  overlay_color: "#000"
+  overlay_filter: "0.5"
   overlay_image: /assets/images/unsplash-image-1.jpg
-  caption: "Photo by [Unsplash](https://unsplash.com)"
+  no_text_overlay: true
 ---
 
 Welcome to this sample post designed to illustrate the various Markdown elements and how they are styled using the Minimal Mistakes Jekyll theme.

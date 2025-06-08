@@ -1,5 +1,5 @@
 en:
-  title            : "Zeev Does Things"
+  title            : "place"
 # subtitle         : "A blog about various topics"
   name             : "Ze Ev Shalev"
   description      : "I'm a creative, curious human."
@@ -14,7 +14,7 @@ en:
   mastodon_label   : "Mastodon"
 
 he:
-  title            : "זאב עושה דברים"
+  title            : "מקום"
 # subtitle         : "בלוג על נושאים שונים"
   name             : "זאב שלו"
   description      : "אני אדם יצירתי וסקרן."

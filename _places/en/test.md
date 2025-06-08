@@ -9,7 +9,8 @@ read_time: true
 toc: true
 toc_sticky: true
 header:
-  image: /assets/images/unsplash-image-1.jpg
+  overlay_image: /assets/images/unsplash-image-1.jpg
+  # no_text_overlay: true
   caption: "Photo by [Unsplash](https://unsplash.com)"
 ---
 

@@ -1,3 +1,7 @@
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Basic-Auth = "admin qr3bMGJgynKQvWf"
 [build]
   command = "bundle exec jekyll build"
   publish = "_site"

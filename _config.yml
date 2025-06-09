@@ -28,7 +28,7 @@ author: # Author Information _data/config-text.yml
 #       PLUGINS
 
 plugins:
-#  - jekyll-minifier
+  - jekyll-minifier
   - jekyll-polyglot
   - jekyll-include-cache
 # for later...
@@ -125,7 +125,7 @@ include:
  - _posts/en
  - _posts/he
  - assets/css/custom.css
- - _redirects
+ - _headers
 exclude:
   - .sass-cache/
   - .jekyll-cache/

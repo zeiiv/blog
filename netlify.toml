@@ -1,6 +1,3 @@
 [build]
-  command = '''
-  bundle exec jekyll build &&
-  npx staticrypt _site/index.html "qr3bMGJgynKQvWf" -o _site/index.html
-  '''
+  command = "bundle exec jekyll build"
   publish = "_site"

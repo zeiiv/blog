@@ -1,7 +1,0 @@
-{
-  "name": "my-site",
-  "private": true,
-  "devDependencies": {
-    "netlify-plugin-password-protection": "^2.0.0"
-  }
-}

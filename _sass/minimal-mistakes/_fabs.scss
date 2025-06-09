@@ -1,6 +1,5 @@
-/* Basic FAB Styles */
-.fab-button,
-.fab-container {
+/* Base FAB styles for positioning and layout */
+.fab-base {
   position: fixed;
   bottom: 1.5rem; /* Distance from bottom */
   right: 1.5rem;  /* Distance from right */
@@ -11,14 +10,19 @@
   display: flex;
   justify-content: center;
   align-items: center;
-background-color: rgba(var(--primary-color-rgb, 0, 123, 255), 0.7); /* Adjust opacity for glass effect */
-  backdrop-filter: blur(5px); /* Add blur effect */
-  -webkit-backdrop-filter: blur(5px); /* For Safari support */
   color: #fff;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  transition: background-color 0.3s ease, transform 0.3s ease;
   text-decoration: none; /* For link FABs */
   cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+/* Main FAB button styling */
+.fab-button {
+  @extend .fab-base;
+  background-color: rgba(var(--primary-color-rgb, 0, 123, 255), 0.7); /* Adjust opacity for glass effect */
+  backdrop-filter: blur(5px); /* Add blur effect */
+  -webkit-backdrop-filter: blur(5px); /* For Safari support */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 .fab-button:hover,
@@ -27,24 +31,21 @@ background-color: rgba(var(--primary-color-rgb, 0, 123, 255), 0.7); /* Adjust op
   transform: translateY(-2px);
 }
 
-.fab-button i,
-.fab-container i {
+.fab-button i {
   font-size: 1.5rem; /* Icon size */
-  
 }
 
 /* Styles for Toggle FAB Options (if using Option B HTML) */
 .fab-container {
   flex-direction: column; /* Stack main button and options */
   align-items: flex-end; /* Align options to the right */
-  bottom: 1.5rem;
-  right: 1.5rem;
   width: auto; /* Adjust width to content */
   height: auto;
   background: none; /* No background for the container itself */
   box-shadow: none;
 }
 
+/* Toggle FAB option buttons */
 .fab-options {
   display: flex;
   flex-direction: column;
@@ -63,6 +64,7 @@ background-color: rgba(var(--primary-color-rgb, 0, 123, 255), 0.7); /* Adjust op
   transform: translateY(0);
 }
 
+/* Individual option buttons */
 .fab-option {
   width: 3rem; /* Smaller option size */
   height: 3rem;
@@ -84,17 +86,17 @@ background-color: rgba(var(--primary-color-rgb, 0, 123, 255), 0.7); /* Adjust op
 
 /* Basic Responsiveness (adjust as needed) */
 @media (max-width: 768px) {
-  .fab-button,
-  .fab-container {
+  .fab-base {
     width: 3.5rem;
     height: 3.5rem;
     bottom: 1rem;
     right: 1rem;
   }
-  .fab-button i,
-  .fab-container i {
+
+  .fab-button i {
     font-size: 1.3rem;
   }
+
   .fab-option {
     width: 2.5rem;
     height: 2.5rem;

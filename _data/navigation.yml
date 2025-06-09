@@ -1,6 +1,6 @@
 main:
   en:
-    - title: "About"
+    - title: "for"
       url: /about/
     - title: "Projects"
       url: /projects/

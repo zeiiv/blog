@@ -1,3 +1,3 @@
 [build]
-  command = "bundle exec jekyll build && npx staticrypt _site/index.html $PROTECTED_PASSWORD -o _site/index.html"
+  command = "bundle exec jekyll build && echo $PROTECTED_PASSWORD | npx staticrypt _site/index.html -o _site/index.html --stdin"
   publish = "_site"

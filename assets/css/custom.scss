@@ -2,23 +2,23 @@
 
 /*
  * Disables the Minimal Mistakes theme's default "intro" animation.
-*/
+*//*
 @-webkit-keyframes intro { }
-@keyframes intro { }
+@keyframes intro { }*/
 
 /*
  * Defines the fade-in effect we want to see on language change.
-*/
+*//*
 @keyframes fadeInOnLangChange {
   from { opacity: 0; }
   to { opacity: 1; }
-}
+}*/
 
 /*
  * APPLY OUR ANIMATION:
  * This rule looks for the 'page-is-changing-language' class that our script
  * adds to the body and applies our custom animation.
-*/
+*//*
 body.page-is-changing-language .initial-content {
   animation: fadeInOnLangChange 0.5s ease-in !important;
-}
+}*/

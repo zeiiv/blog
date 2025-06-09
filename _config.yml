@@ -125,7 +125,7 @@ include:
  - _pages/he
  - _posts/en
  - _posts/he
- - assets/css/custom.css
+ - assets/css/custom.scss
  - _headers
 exclude:
   - .sass-cache/

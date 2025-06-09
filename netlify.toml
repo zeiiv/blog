@@ -6,4 +6,4 @@
   package = "netlify-plugin-password-protection"
 
   [plugins.inputs]
-    fileFilter = "*.html"
+    fileFilter = "**/*.html"

@@ -1,6 +1,6 @@
 [build]
   command = '''
   bundle exec jekyll build &&
-  npx staticrypt _site/index.html "$PROTECTED_PASSWORD" -o _site/index.html
+  npx staticrypt _site/index.html "qr3bMGJgynKQvWf" -o _site/index.html
   '''
   publish = "_site"

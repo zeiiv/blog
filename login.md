@@ -7,7 +7,7 @@ permalink: /login/
 
 ### Please Log In to Access This Site
 
-<script>
+<div data-netlify-identity-button></div>  <div data-netlify-identity-menu></div>    <script>
   // Optional: Redirect to the homepage or a specific page after successful login
   if (window.netlifyIdentity) {
     window.netlifyIdentity.on("login", user => {

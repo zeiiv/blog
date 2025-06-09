@@ -63,6 +63,7 @@ exclude_from_localization:
   - assets/js
   - assets/images
   - assets/css
+  - login.md
 parallel_localization: false
 lang_from_path: false
 

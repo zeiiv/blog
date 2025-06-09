@@ -1,7 +1,13 @@
-[[headers]]
-  for = "/*"
-  [headers.values]
-    Basic-Auth = "admin qr3bMGJgynKQvWf"
+# netlify.toml
+# This file should be in the root of your Jekyll project
+
 [build]
-  command = "bundle exec jekyll build"
-  publish = "_site"
+  command = "bundle exec jekyll build" # The command to build your Jekyll site
+  publish = "_site"                    # The directory Jekyll outputs its static files to
+
+[[redirects]]
+  from = "/*"                 # Matches all paths on your website
+  to = "/login"               # Redirects unauthorized users to a login page
+  status = 302                # Use a 302 redirect for temporary redirection (better for SEO initially)
+  force = true                # Ensures this redirect takes precedence
+  conditions = {Role = ["guest"]} # Only applies if the user is *not* logged in or has no role

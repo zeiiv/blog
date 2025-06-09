@@ -9,24 +9,8 @@
     {% include head/custom.html %}
   </head>
 
-<script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
-<script>
-  if (window.netlifyIdentity) {
-    window.netlifyIdentity.on("init", user => {
-      if (!user) {
-        window.netlifyIdentity.on("login", () => {
-          document.location.href = "/";
-        });
-      }
-    });
-  }
-</script>
-
 <body class="layout--{{ page.layout | default: layout.layout }} skin--{{ site.minimal_mistakes_skin | default: 'default' }} lang--{{ page.lang | default: site.lang }}{% if page.classes or layout.classes %}{{ page.classes | default: layout.classes | join: ' ' | prepend: ' ' }}{% endif %}" dir="{% if page.rtl %}rtl{% else %}ltr{% endif %}"></body>
-<div>
-<a href="#" onclick="netlifyIdentity.open()">Login</a>
-<a href="#" onclick="netlifyIdentity.logout()">Logout</a>
-</div>
+
 {% include_cached skip-links.html %}
     {% include_cached masthead.html %}
 

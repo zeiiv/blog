@@ -1,1 +1,11 @@
-{ "name": "zeev-site", "version": "1.0.0", "private": true }
+{
+  "name": "my-jekyll-site",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "build": "ruby build_pages.rb && bundle exec jekyll build",
+    "serve": "ruby build_pages.rb && bundle exec jekyll serve"
+  },
+  "author": "",
+  "license": "ISC"
+}

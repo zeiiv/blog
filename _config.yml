@@ -1,4 +1,3 @@
-
 #       SITE BASICS
 
 url: "https://localhost:4000"
@@ -29,7 +28,7 @@ author: # Author Information _data/config-text.yml
 
 plugins:
   - jekyll-minifier
-  - jekyll-polyglot
+# - jekyll-polyglot
   - jekyll-include-cache
 # for later...
 # - jekyll-feed
@@ -55,17 +54,18 @@ footer:
 
 #      LANGUAGES - POLYGLOT
 
-languages: 
-  - en
-  - he
-default_lang: en
-exclude_from_localization:
-  - assets/js
-  - assets/images
-  - assets/css
-  - login.md
-parallel_localization: false
-lang_from_path: false
+
+# languages:
+#  - en
+#  - he
+# default_lang: en
+# exclude_from_localization:
+# - assets/js
+# - assets/images
+# - assets/css
+# - login.md
+#parallel_localization: false
+
 
 markdown: kramdown # Syntax Processing
 highlighter: rouge # Code Highlighting
@@ -76,58 +76,37 @@ highlighter: rouge # Code Highlighting
 collections:
   places:
     output: true
-    localize: true
+    permalink: /:name/
   posts:
     output: true
-    localize: true
+    permalink: /posts/:title/
 
 
 #   CONTENT LANGUAGE AND PERMALINKS
 
 defaults:
-  - scope: # English places
-      path        : "_places/en"
-      type        : places
+  - scope:
+      path: ""
     values:
-      permalink   : /:name/
-      locale      : en
-      lang        : en
-
-  - scope: # Hebrew Pages
-      path        : "_places/he"
-      type        : places
+      lang: "en"
+      rtl: false
+  - scope:
+      path: "**/*-he.md"
     values:
-      permalink   : /:name/
-      locale      : he
-      lang        : he
-      rtl         : true
-  - scope: # English Posts
-      path        : "_posts/en"
-      type        : posts
-    values:
-      permalink   : /posts/:title/
-      locale      : en
-      lang        : en
-  - scope: # Hebrew Posts
-      path        : "_posts/he"
-      type        : posts
-    values:
-      permalink   : /posts/:title/
-      locale      : he
-      lang        : he
-      rtl         : true
+      lang: "he"
+      rtl: true
 
 
 #     MORE BUILD SETTINGS
 
 include:
- - _pages/en
- - _pages/he
- - _posts/en
- - _posts/he
+ #- _places
+ #- _posts
  - assets/css/custom.scss
- - _headers
 exclude:
+  - build_pages.rb
+  - #_places/_content/
+  - #_posts/_content/
   - .sass-cache/
   - .jekyll-cache/
   - Gemfile

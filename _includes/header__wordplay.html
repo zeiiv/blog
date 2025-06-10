@@ -1,0 +1,51 @@
+{%- assign lang = page.lang | default: 'en' -%}
+{%- assign nav_links = site.data.navigation.main -%}
+{%- assign url_parts = page.url | split: '/' -%}
+{%- assign current_page_slug = "" -%}
+{%- if url_parts.size > 1 -%}
+{%- assign current_page_slug = url_parts[1] -%}
+{%- endif -%}
+
+<div class="wordplay-header" id="wordplay-header">
+  <ul class="wordpile" data-lang="{{ lang }}">
+    <li class="word-item pinned-word" data-pinned>
+      <a href="{{ '/' | relative_url }}" class="label-place" aria-label="Go to homepage">
+        <div class="word">
+          <span class="en">place</span>
+          <span class="he">מקום</span>
+        </div>
+      </a>
+
+      {% for item in nav_links.en %}
+      {%- assign item_slug = item.url | remove: '/' -%}
+      {% if item_slug == current_page_slug %}
+      <div class="word">
+        <span class="en">{{ item.title }}</span>
+        <span class="he">{{ nav_links.he[forloop.index0].title }}</span>
+      </div>
+      {% endif %}
+      {% endfor %}
+    </li>
+
+    {% for item in nav_links.en %}
+    {%- assign item_slug = item.url | remove: '/' -%}
+    {% unless item_slug == current_page_slug %}
+    <li class="word-item">
+      <a href="{{ item.url | relative_url }}" class="word">
+        <span class="en">{{ item.title }}</span>
+        <span class="he">{{ nav_links.he[forloop.index0].title }}</span>
+      </a>
+    </li>
+    {% endunless %}
+    {% endfor %}
+  </ul>
+
+  <!-- Language toggle -->
+  <a href="{{ page.alternate_url | default: '/' }}" id="lang-toggle-link" class="lang-toggle-btn"
+    aria-label="Switch Language">
+    <div class="word">
+      <span class="en">HE</span>
+      <span class="he">EN</span>
+    </div>
+  </a>
+</div>

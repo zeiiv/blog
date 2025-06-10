@@ -22,3 +22,19 @@
 body.page-is-changing-language .initial-content {
   animation: fadeInOnLangChange 0.5s ease-in !important;
 }*/
+
+/* Wordplay Header Styling */
+
+
+/* Show/hide language content based on the 'show-hebrew' class on the body */
+.lang-he {
+  display: none;
+}
+
+.show-hebrew .lang-en {
+  display: none;
+}
+
+.show-hebrew .lang-he {
+  display: block;
+}

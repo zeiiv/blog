@@ -1,11 +1,33 @@
 main:
   en:
-    - title: "for"
-      url: /about/
-    - title: "Projects"
-      url: /projects/
+    - title: "of"
+      url: /of/
+      func: "About"
+    - title: "with"
+      url: /with/
+      func: "Collaborations"
+    - title: "less"
+      url: /less/
+      func: "Blog / Diary"
+    - title: "time"
+      url: /time/
+      func: "Contact"
+    - title: "ment"
+      url: /ment/
+      func: "Misc / Archive"
   he:
-    - title: "אודות"
-      url: /about/
-    - title: "פרויקטים"
-      url: /projects/
+    - title: "של"
+      url: /of/
+      func: "אודות"
+    - title: "עם"
+      url: /with/
+      func: "שיתופי פעולה"
+    - title: "חסר"
+      url: /less/
+      func: "בלוג / יומן"
+    - title: "שעה"
+      url: /time/
+      func: "יצירת קשר"
+    - title: "אחר"
+      url: /ment/
+      func: "שונות / ארכיון"

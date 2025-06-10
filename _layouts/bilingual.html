@@ -1,0 +1,24 @@
+---
+layout: default
+---
+{%- assign parts = content | split: "%%%HEBREW%%%" -%}
+{%- assign content_en = parts[0] -%}
+{%- assign content_he = parts[1] -%}
+
+<article class="page">
+  <header>
+    <h1 id="page-title" class="page__title">
+      <span class="lang-en">{{ page.title }}</span>
+      <span class="lang-he">{{ page.title_he }}</span>
+    </h1>
+  </header>
+
+  <section class="page__content">
+    <div class="lang-en" lang="en">
+      {{ content_en | markdownify }}
+    </div>
+    <div class="lang-he" lang="he" dir="rtl">
+      {{ content_he | markdownify }}
+    </div>
+  </section>
+</article>

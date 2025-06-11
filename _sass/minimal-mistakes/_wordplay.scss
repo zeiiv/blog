@@ -7,9 +7,10 @@
   display: flex;
   align-items: center;
   min-height: $nav-height;
-  background: $background-color;
+  background: $secondary-color;
   width: 100%;
   margin-left: calc(-50vw + 50%);
+  overflow: visible;
 }
 
 .wordplay-menu {
@@ -30,42 +31,58 @@
   justify-content: flex-end;
   text-align: right;
   border: 1px solid pink;
+  margin-left: 1em;
 }
 
 .zone-pinned {
+  overflow: visible;
+  position: relative;
   flex: 0 0 auto;
   justify-content: flex-start;
   text-align: left;
   border: 1px solid pink;
+  padding-inline: 2rem;
 }
 
 .zone-pile {
+  overflow: visible;
+  position: relative; 
   flex: 1 1 auto;
   justify-content: flex-end;
   text-align: right;
   border: 1px solid pink;
+  margin-right: 1em;
 }
 
-.word {
-  @extend .btn;
-  @extend .btn--small;
-
+.word-item {
   // --- Custom styles for 3D language flip ---
   position: relative;
   transform-style: preserve-3d;
   // Keep the transform separate so it doesn't get overridden by .btn transitions
-  transition: transform 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+  //transition: transform 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55);
   cursor: pointer;
   width: max-content;
-  text-align: center;
-  .en,
-  .he {
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden; // For Safari
-  }
+  .word {
+    @extend .btn;
+    @extend .btn--small;
+    @extend .btn--primary;
+    transition: none;
+    .en,
+    .he {
+      font-family: $font-family-base;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden; // For Safari
+    }
 
-  .he {
-    transform: rotateX(180deg);
+    .he {
+      transform: rotateX(180deg);
+
+      a {
+        display: flex;
+        width: 100%;
+        height: 100%;
+      }
+    }
   }
 }
 
@@ -74,22 +91,11 @@ body.show-hebrew .word {
   transform: rotateX(180deg);
 }
 
-// Wordplay custom styles
-// Special styling for the main "place" word to make it stand out
-.label-place .word {
-  background-color: #333;
-  color: #fff;
-  border-color: #333;
-
-  &:hover {
-    background-color: #000;
-    border-color: #000;
-  }
-}
 
 // Styling for the language toggle button
 .lang-toggle-btn {
   text-decoration: none !important;
+
   .word {
     background-color: #f0f0f0;
   }
@@ -105,18 +111,19 @@ body.show-hebrew .word {
 
 
 //TEMP
-
+/**
 .wordplay-zone {
-  outline: 1px dashed red; /* to see layout frames */
+  outline: 1px dashed red;
+  /* to see layout frames 
 }
 
 .zone-pinned {
-  background: rgba(255,255,0,0.2);
+  background: rgba(255, 255, 0, 0.2);
   min-width: 100px;
 }
 
 .zone-pile {
-  background: rgba(0,255,255,0.2);
+  background: rgba(0, 255, 255, 0.2);
   display: flex;
   gap: 1rem;
-}
+}*/

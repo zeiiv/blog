@@ -27,7 +27,7 @@ author: # Author Information _data/config-text.yml
 #       PLUGINS
 
 plugins:
-  - jekyll-minifier
+# - jekyll-minifier
 # - jekyll-polyglot
   - jekyll-include-cache
 # for later...

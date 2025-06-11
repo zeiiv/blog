@@ -1,96 +1,156 @@
 /**
- * -File: lang-switch.js
- * -Summary: Manages the language switching functionality for the bilingual website.
- * -Description: Handles user interaction for toggling between English and Hebrew,
- * persisting the choice in localStorage, and setting appropriate document attributes.
+ * Wordplay Header & Language Switch Interaction (v4 - Unified & Corrected)
+ *
+ * This single script manages all header interactions:
+ * 1. The "musical chairs" navigation animation.
+ * 2. The 3D language-flip effect.
+ *
+ * It is designed to work with Barba.js by re-initializing all listeners
+ * after every page transition, ensuring functionality is never lost.
  */
 
-document.addEventListener('DOMContentLoaded', function () {
+function initWordplayAndLangSwitch() {
+  const wordplayHeader = document.getElementById('wordplay-header');
+  if (!wordplayHeader) {
+    console.error('Wordplay Critical: Header element #wordplay-header not found.');
+    return;
+  }
 
-    const body = document.body;
-    const html = document.documentElement;
-    const header = document.getElementById('wordplay-header');
+  // Prevent re-attaching listeners on the same element, which can cause issues.
+  if (wordplayHeader.dataset.wordplayInitialized === 'true') {
+    return;
+  }
+  wordplayHeader.dataset.wordplayInitialized = 'true';
 
-    // Edge Case: If the core elements aren't found, the script can't run.
-    if (!body || !html) {
-        console.error('lang-switch.js: Could not find the <body> or <html> element. Script cannot proceed.');
-        return;
+  const pinnedWordLi = wordplayHeader.querySelector('.pinned-word');
+  const body = document.body;
+  const html = document.documentElement;
+
+  // --- 1. Language Switching Logic (from your original lang-switch.js) ---
+
+  function setStoredLanguage(key, value) {
+    try {
+      localStorage.setItem(key, value);
+    } catch (e) {
+      console.error('Could not access localStorage. Language preference will not be saved.', e);
+    }
+  }
+
+  function getStoredLanguage(key) {
+    try {
+      return localStorage.getItem(key);
+    } catch (e) {
+      console.error('Could not access localStorage.', e);
+      return null;
+    }
+  }
+
+  function applyLanguage(lang) {
+    const isHebrew = lang === 'he';
+    body.classList.toggle('show-hebrew', isHebrew);
+    html.setAttribute('lang', isHebrew ? 'he' : 'en');
+    html.setAttribute('dir', isHebrew ? 'rtl' : 'ltr');
+    setStoredLanguage('language', isHebrew ? 'he' : 'en');
+  }
+
+  // --- 2. Master Event Handler (Event Delegation) ---
+
+  wordplayHeader.addEventListener('click', function (e) {
+    const targetLink = e.target.closest('a');
+    if (!targetLink) return;
+
+    // --- Handle Language Toggle Click ---
+    if (targetLink.id === 'lang-toggle-link') {
+      e.preventDefault();
+      const currentLang = body.classList.contains('show-hebrew') ? 'en' : 'he';
+      applyLanguage(currentLang);
+      return; // Stop further execution
     }
 
-    /**
-     * Safely sets an item in localStorage, handling potential browser restrictions.
-     * param {string} key The key of the item to set.
-     * param {string} value The value to set.
-     */
-    function setStoredLanguage(key, value) {
-        try {
-            localStorage.setItem(key, value);
-        } catch (e) {
-            console.error('lang-switch.js: Could not access localStorage. Language preference will not be saved.', e);
+    // --- Handle Navigation Word Click ---
+    const isNavWord = targetLink.closest('.word-item:not(.pinned-word)');
+    if (isNavWord) {
+      e.preventDefault();
+      const clickedLi = isNavWord;
+      const clickedLink = targetLink;
+      const activeWordDiv = pinnedWordLi.querySelector('.word:not(a .word)');
+
+      if (!activeWordDiv) return;
+
+      // Start the animation and navigation logic
+      const clickedRect = clickedLink.getBoundingClientRect();
+      const activeRect = activeWordDiv.getBoundingClientRect();
+      const firstPileItem = wordplayHeader.querySelector('.word-item:not(.pinned-word)');
+      const pileReturnRect = firstPileItem.getBoundingClientRect();
+
+      const movingToActive = clickedLink.cloneNode(true);
+      const movingToPile = activeWordDiv.cloneNode(true);
+
+      gsap.set([movingToActive, movingToPile], { position: 'fixed', margin: 0, zIndex: 100 });
+      gsap.set(movingToActive, { top: clickedRect.top, left: clickedRect.left, width: clickedRect.width, height: clickedRect.height });
+      gsap.set(movingToPile, { top: activeRect.top, left: activeRect.left, width: activeRect.width, height: activeRect.height });
+
+      document.body.appendChild(movingToActive);
+      document.body.appendChild(movingToPile);
+      gsap.set([clickedLi, activeWordDiv], { opacity: 0 });
+
+      gsap.to(movingToActive, { x: activeRect.left - clickedRect.left, y: activeRect.top - clickedRect.top, duration: 0.7, ease: 'power2.inOut' });
+
+      gsap.to(movingToPile, {
+        x: pileReturnRect.left - activeRect.left,
+        y: pileReturnRect.top - activeRect.top,
+        duration: 0.7,
+        ease: 'power2.inOut',
+        onComplete: function() {
+          const newActiveWordDiv = document.createElement('div');
+          newActiveWordDiv.className = 'word';
+          newActiveWordDiv.innerHTML = clickedLink.innerHTML;
+          newActiveWordDiv.dataset.url = clickedLink.href;
+
+          const newLinkForPile = document.createElement('a');
+          newLinkForPile.className = 'word';
+          newLinkForPile.href = activeWordDiv.dataset.url || '#';
+          newLinkForPile.innerHTML = activeWordDiv.innerHTML;
+
+          const newLiForPile = document.createElement('li');
+          newLiForPile.className = 'word-item';
+          newLiForPile.appendChild(newLinkForPile);
+
+          activeWordDiv.replaceWith(newActiveWordDiv);
+          clickedLi.replaceWith(newLiForPile);
+
+          movingToActive.remove();
+          movingToPile.remove();
+          gsap.set([newLiForPile, newActiveWordDiv], { opacity: 1 });
+
+          if (window.barba) {
+            clickedLink.click();
+          } else {
+            window.location.href = clickedLink.href;
+          }
         }
+      });
     }
+  });
 
-    /**
-     * Safely retrieves an item from localStorage.
-     * param {string} key The key of the item to retrieve.
-     * returns {string|null} The value of the item, or null if it cannot be accessed.
-     */
-    function getStoredLanguage(key) {
-        try {
-            return localStorage.getItem(key);
-        } catch (e) {
-            console.error('lang-switch.js: Could not access localStorage.', e);
-            return null;
-        }
-    }
+  // --- 3. Initial State Setup ---
+  // Set language on first load (for non-Barba visits)
+  const savedLang = getStoredLanguage('language') || 'en';
+  applyLanguage(savedLang);
+}
 
-    /**
-     * Switches the site's language by updating document classes and attributes.
-     * param {'en' | 'he'} lang The language to switch to ('en' or 'he').
-     */
-    function switchLanguage(lang) {
-        const isHebrew = lang === 'he';
-        
-        // Use the second argument of toggle to force add or remove the class.
-        body.classList.toggle('show-hebrew', isHebrew);
-        html.setAttribute('lang', isHebrew ? 'he' : 'en');
-        html.setAttribute('dir', isHebrew ? 'rtl' : 'ltr');
-        
-        setStoredLanguage('language', isHebrew ? 'he' : 'en');
-    }
 
-    /**
-     * Handles all click events within the header, delegating actions based on the clicked link.
-     * param {MouseEvent} e The click event.
-     */
-    function handleHeaderClick(e) {
-        const link = e.target.closest('a');
+// --- 4. Barba.js Integration ---
+// This ensures that our init function runs on the first page load
+// AND after every subsequent page transition.
 
-        // If the click wasn't on a link, do nothing.
-        if (!link) {
-            return;
-        }
+document.addEventListener('DOMContentLoaded', initWordplayAndLangSwitch);
 
-        // If the click was on the language toggle, switch the language.
-        if (link.id === 'lang-toggle-link') {
-            e.preventDefault(); // Prevent the link from navigating.
-            const currentLang = body.classList.contains('show-hebrew') ? 'en' : 'he';
-            switchLanguage(currentLang);
-        }
-        // For all other links, do nothing and allow the default browser navigation to occur.
-    }
-
-    // --- Initialization ---
-
-    // Attach the single, smart listener to the header.
-    if (header) {
-        header.addEventListener('click', handleHeaderClick);
-    } else {
-        // This is a critical error, as the header is essential for navigation.
-        console.error('lang-switch.js: CRITICAL - Header element with ID "wordplay-header" was not found. Navigation and language switching will not work.');
-    }
-
-    // Set the initial language on page load based on saved preference or default to English.
-    const savedLang = getStoredLanguage('language') || 'en';
-    switchLanguage(savedLang);
-});
+if (window.barba) {
+  barba.hooks.after(function() {
+    // Un-set the initialized flag on the header of the *previous* page's DOM
+    // This is not strictly necessary but is good practice.
+    // The main thing is that the *new* page's header won't have the flag yet.
+    initWordplayAndLangSwitch();
+  });
+}

@@ -1,86 +1,129 @@
-document.addEventListener("DOMContentLoaded", () => {
-  const pinned = document.querySelector(".pinned-word");
-  const pile = document.querySelector(".wordpile");
+function initWordplay() {
+  console.log("[wordplay] initWordplay started");
+  const wordplayHeader = document.getElementById('wordplay-header');
+  if (!wordplayHeader) {
+    console.error("[wordplay] ERROR: #wordplay-header not found");
+    return;
+  }
 
-  if (!pinned || !pile) return;
+  const pinnedWordLi = wordplayHeader.querySelector('.pinned-word');
+  const wordPileUl = wordplayHeader.querySelector('.wordpile');
+  const langToggle = document.getElementById('lang-toggle-link');
 
-  const getWordElements = () => pile.querySelectorAll(".word-item .word");
+  if (!pinnedWordLi || !wordPileUl) {
+    console.error("[wordplay] ERROR: .pinned-word or .wordpile missing");
+    return;
+  }
 
-  getWordElements().forEach((wordEl) => {
-    wordEl.addEventListener("click", () => {
-      const newWord = wordEl.textContent.trim();
-      const oldWord = pinned.textContent.trim();
-
-      if (newWord === oldWord) return; // No action if same word
-
-      // Clone both words for animation
-      const cloneNew = wordEl.cloneNode(true);
-      const cloneOld = pinned.cloneNode(true);
-      document.body.append(cloneNew, cloneOld);
-
-      // Get bounding boxes
-      const newBox = wordEl.getBoundingClientRect();
-      const pinnedBox = pinned.getBoundingClientRect();
-      const wordEls = getWordElements();
-      const firstPileBox = wordEls.length > 0 ? wordEls[0].getBoundingClientRect() : null;
-
-      // Animate new word → to pinned position
-      gsap.set(cloneNew, {
-        position: "fixed",
-        top: newBox.top,
-        left: newBox.left,
-        margin: 0,
-        zIndex: 9999,
-      });
-
-      gsap.to(cloneNew, {
-        duration: 0.45,
-        x: pinnedBox.left - newBox.left,
-        y: pinnedBox.top - newBox.top,
-        ease: "power2.out",
-        onComplete: () => {
-          const enSpan = pinned.querySelector(".en");
-          const heSpan = pinned.querySelector(".he");
-          if (enSpan) enSpan.textContent = newWord;
-          if (heSpan) heSpan.textContent = newWord;
-          cloneNew.remove();
-        },
-      });
-
-      // Animate old word → to start of pile
-      if (firstPileBox) {
-        gsap.set(cloneOld, {
-          position: "fixed",
-          top: pinnedBox.top,
-          left: pinnedBox.left,
-          margin: 0,
-          zIndex: 9998,
-        });
-
-        gsap.to(cloneOld, {
-          duration: 0.45,
-          x: firstPileBox.left - pinnedBox.left,
-          y: firstPileBox.top - pinnedBox.top,
-          ease: "power2.in",
-          onComplete: () => cloneOld.remove(),
-        });
-      }
-
-      // Reorder real DOM: clicked word removed, old word prepended
-      wordEl.remove();
-      const newOldEl = document.createElement("li");
-      newOldEl.className = "word-item";
-      const newOldLink = document.createElement("a");
-      newOldLink.className = "word";
-      newOldLink.href = "#"; // or reuse old href if tracked
-      newOldLink.innerHTML = `
-        <span class="en">${oldWord}</span>
-        <span class="he">${oldWord}</span>
-      `;
-      newOldEl.appendChild(newOldLink);
-      pile.prepend(newOldEl);
-
-      newOldLink.addEventListener("click", () => newOldLink.click());
+  /* --- A. Language Toggle ---
+  if (langToggle) {
+    langToggle.addEventListener('click', (e) => {
+      e.preventDefault();
+      console.log("[wordplay] Language toggle clicked");
+      document.body.classList.toggle('show-hebrew');
     });
+  } else {
+    console.warn("[wordplay] WARNING: #lang-toggle-link not found");
+  }*/
+
+  // --- B. Word pile click handler ---
+  wordPileUl.addEventListener('click', (e) => {
+    console.log("[wordplay] Word pile clicked");
+    const clickedLink = e.target.closest('.word-item:not(.pinned-word) a.word');
+    if (!clickedLink) {
+      console.log("[wordplay] Clicked element is not a valid word link");
+      return;
+    }
+    e.preventDefault();
+
+    if (clickedLink.classList.contains('clicked-once')) {
+      console.warn("[wordplay] Already clicked — skipping duplicate trigger");
+      return;
+    }
+    clickedLink.classList.add('clicked-once');
+
+    const clickedLi = clickedLink.closest('.word-item');
+    const activeWordDiv = pinnedWordLi.querySelector('.word');
+    if (!activeWordDiv) {
+      console.error("[wordplay] ERROR: No active pinned word found");
+      return;
+    }
+
+    const href = clickedLink.href;
+    console.log(`[wordplay] Animating navigation to: ${href}`);
+
+    const clickedRect = clickedLink.getBoundingClientRect();
+    const activeRect = activeWordDiv.getBoundingClientRect();
+
+    const movingToActive = clickedLink.cloneNode(true);
+    const movingToPile = activeWordDiv.cloneNode(true);
+
+    Object.assign(movingToActive.style, {
+      position: 'fixed',
+      top: `${clickedRect.top}px`,
+      left: `${clickedRect.left}px`,
+      width: `${clickedRect.width}px`,
+      height: `${clickedRect.height}px`,
+      margin: 0,
+      zIndex: 9999,
+    });
+
+    Object.assign(movingToPile.style, {
+      position: 'fixed',
+      top: `${activeRect.top}px`,
+      left: `${activeRect.left}px`,
+      width: `${activeRect.width}px`,
+      height: `${activeRect.height}px`,
+      margin: 0,
+      zIndex: 9998,
+    });
+
+    document.body.appendChild(movingToActive);
+    document.body.appendChild(movingToPile);
+
+    gsap.set([clickedLi, activeWordDiv], { opacity: 0 });
+
+    console.log("[wordplay] Triggering native link click for Barba");
+    setTimeout(() => clickedLink.click(), 0);
+
+    const timeline = gsap.timeline({
+      defaults: { duration: 0.7, ease: 'power2.inOut' },
+      onComplete: () => {
+        console.log("[wordplay] Animation complete");
+        movingToActive.remove();
+        movingToPile.remove();
+      }
+    });
+
+    timeline.to(movingToActive, {
+      x: activeRect.left - clickedRect.left,
+      y: activeRect.top - clickedRect.top
+    }, 0);
+
+    timeline.to(movingToPile, {
+      x: clickedRect.left - activeRect.left,
+      y: clickedRect.top - activeRect.top
+    }, 0);
   });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  console.log("[wordplay] DOMContentLoaded");
+  initWordplay();
 });
+
+if (window.barba) {
+  barba.hooks.enter(() => {
+    console.log("[wordplay] Barba enter hook triggered");
+    const header = document.getElementById('wordplay-header');
+    if (header) {
+      header.dataset.wordplayInitialized = 'false';
+    }
+  });
+
+  barba.hooks.after(() => {
+    console.log("[wordplay] Barba after hook triggered");
+    document.querySelectorAll('.clicked-once').forEach(el => el.classList.remove('clicked-once'));
+    initWordplay();
+  });
+}

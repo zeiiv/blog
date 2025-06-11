@@ -20,8 +20,8 @@ barba.init();
 /**
  * Creates and plays a GSAP Flip animation to swap the clicked word-item
  * with the currently pinned word-item in the header.
- * @param {HTMLElement} clickedItem The .word-item element that was clicked.
- * @returns {gsap.core.Timeline|null} A GSAP timeline instance if the animation
+ * param {HTMLElement} clickedItem The .word-item element that was clicked.
+ * returns {gsap.core.Timeline|null} A GSAP timeline instance if the animation
  * is successfully set up, otherwise null.
  */
 function createWordSwapAnimation(clickedItem) {
@@ -158,13 +158,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // If Barba.js is available, initiate the page transition through its API
     // This will run in parallel with the GSAP animation.
-  /**  if (typeof Barba !== 'undefined' && Barba.go) {
+    if (typeof Barba !== 'undefined' && Barba.go) {
       console.log('[wordplay] Initiating Barba.js page transition to:', innerLink.href);
-      Barba.go(innerLink.href); 
+     // Barba.go(innerLink.href); 
     } else {
       // Fallback if Barba.js is not found (though it should be if used)
       console.warn('[wordplay] Barba.js not detected or Barba.go method not found. Navigating directly.');
-      window.location.href = innerLink.href;
-    }**/
+    //  window.location.href = innerLink.href;
+    }
   });
 });

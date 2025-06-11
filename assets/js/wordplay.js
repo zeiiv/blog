@@ -15,7 +15,7 @@ import { gsap } from "gsap";
 import { Flip } = from "gsap/Flip";
 */
 gsap.registerPlugin(Flip);
-
+barba.init();
 
 /**
  * Creates and plays a GSAP Flip animation to swap the clicked word-item
@@ -158,13 +158,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // If Barba.js is available, initiate the page transition through its API
     // This will run in parallel with the GSAP animation.
-    if (typeof Barba !== 'undefined' && Barba.go) {
+  /**  if (typeof Barba !== 'undefined' && Barba.go) {
       console.log('[wordplay] Initiating Barba.js page transition to:', innerLink.href);
       Barba.go(innerLink.href); 
     } else {
       // Fallback if Barba.js is not found (though it should be if used)
       console.warn('[wordplay] Barba.js not detected or Barba.go method not found. Navigating directly.');
       window.location.href = innerLink.href;
-    }
+    }**/
   });
 });

@@ -1,69 +1,53 @@
-{%- comment -%}
-  /--------------------------------------------------------------------------
-  | Wordplay Header - Jekyll Include (v2)
-  |
-  | This file generates the dynamic header based on the current page.
-  | It separates the active page's navigation link from the rest,
-  | placing it next to the site title to form the "place[word]" phrase.
-  /--------------------------------------------------------------------------
-{%- endcomment -%}
-
 {%- assign lang = page.lang | default: 'en' -%}
 {%- assign nav_links = site.data.navigation.main -%}
 {%- assign url_parts = page.url | split: '/' -%}
 {%- assign current_page_slug = "" -%}
-
-{%- comment -%}
-  Get the slug of the current page (e.g., 'about' from '/about/').
-{%- endcomment -%}
 {%- if url_parts.size > 1 -%}
   {%- assign current_page_slug = url_parts[1] -%}
 {%- endif -%}
 
 <header class="wordplay-header" id="wordplay-header">
-  <div class="wordpile-container">
-    <ul class="wordpile">
-      
-      {%- comment -%} The "pinned" list item holds both the site title and the active word. {%- endcomment -%}
-      <li class="word-item pinned-word">
-        
-        {%- comment -%} The main site title link ("place"). {%- endcomment -%}
-        <a href="{{ '/' | relative_url }}" class="label-place" aria-label="Go to homepage">
-          <div class="word">
-            <span class="en">{{ site.data.config-text['en'].title | default: site.title }}</span>
-            <span class="he">{{ site.data.config-text['he'].title | default: site.title }}</span>
+  <div class="wordplay-menu">
+    
+    <!-- Left: Static 'place' -->
+    <div class="wordplay-zone zone-place">
+      <div class="word-item">
+        <a href="{{ '/' | relative_url }}" class="label-place">
+          <div class="word" data-id="place">
+            <span class="en">{{ site.data.config-text['en'].title }}</span>
+            <span class="he">{{ site.data.config-text['he'].title }}</span>
           </div>
         </a>
+      </div>
+    </div>
 
-        {%- comment -%}
-          Find the navigation item that matches the current page and render it here as a non-interactive DIV.
-        {%- endcomment -%}
-        {% for item in nav_links.en %}
-          {%- assign item_slug = item.url | remove: '/' -%}
-          {% if item_slug == current_page_slug %}
-            {%- comment -%} The key change is adding data-url here to preserve the link. {%- endcomment -%}
-            <div class="word" data-url="{{ item.url | relative_url }}">
-              <span class="en">{{ item.title }}</span>
-              <span class="he">{{ nav_links.he[forloop.index0].title }}</span>
-            </div>
-          {% endif %}
-        {% endfor %}
-      </li>
-
-      {%- comment -%}
-        Render all other navigation items as links in the "pile".
-      {%- endcomment -%}
+    <div class="wordplay-zone zone-pinned">
       {% for item in nav_links.en %}
         {%- assign item_slug = item.url | remove: '/' -%}
-        {% unless item_slug == current_page_slug %}
-          <li class="word-item">
-            <a href="{{ item.url | relative_url }}" class="word">
+        {% if item_slug == current_page_slug %}
+          <div class="word-item">
+            <a href="{{ item.url | relative_url }}" class="word" data-id="{{ item_slug }}" data-url="{{ item.url | relative_url }}">
               <span class="en">{{ item.title }}</span>
               <span class="he">{{ nav_links.he[forloop.index0].title }}</span>
             </a>
-          </li>
+          </div>
+        {% endif %}
+      {% endfor %}
+    </div>
+
+    <div class="wordplay-zone zone-pile">
+      {% for item in nav_links.en %}
+        {%- assign item_slug = item.url | remove: '/' -%}
+        {% unless item_slug == current_page_slug %}
+          <div class="word-item">
+            <a href="{{ item.url | relative_url }}" class="word" data-id="{{ item_slug }}">
+              <span class="en">{{ item.title }}</span>
+              <span class="he">{{ nav_links.he[forloop.index0].title }}</span>
+            </a>
+          </div>
         {% endunless %}
       {% endfor %}
-    </ul>
+    </div>
+
   </div>
 </header>

@@ -3,55 +3,50 @@
    ========================================================================== */
 
 .wordplay-header {
-  // Use space-between to push the word pile and lang toggle to opposite ends.
+  position: relative;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 2rem;
-  perspective: 1200px;
-  border-bottom: 1px solid $border-color;
-  background-color: $background-color;
+  min-height: $nav-height;
+  background: $background-color;
   width: 100%;
+  margin-left: calc(-50vw + 50%);
 }
 
-.wordpile-container {
+.wordplay-menu {
+  display: flex;
+  height: 5em;
+  width: 100%;
+  border: 3px solid blue;
+}
+
+.wordplay-zone {
   display: flex;
   align-items: center;
-  gap: 2rem;
+  gap: 1rem;
 }
 
-.wordpile {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center; // Vertically align items in the middle.
-  gap: 0.75rem;
-  padding: 0; // Remove default list padding.
-  margin: 0; // Remove default list margin.
-  list-style-type: none; // Remove list bullets.
+.zone-place {
+  flex: 0 0 auto;
+  justify-content: flex-end;
+  text-align: right;
+  border: 1px solid pink;
 }
 
-.word-clone--active {
-  // A subtle shadow to make the word "pop" off the page during animation
-  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.15));
+.zone-pinned {
+  flex: 0 0 auto;
+  justify-content: flex-start;
+  text-align: left;
+  border: 1px solid pink;
 }
 
-.word-item {
-  display: inline-block;
-  margin-left: 1em;
-}
-
-.pinned-word {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-right: auto;
+.zone-pile {
+  flex: 1 1 auto;
+  justify-content: flex-end;
+  text-align: right;
+  border: 1px solid pink;
 }
 
 .word {
-  // Inherit base button styles from the Minimal Mistakes theme
   @extend .btn;
   @extend .btn--small;
 
@@ -63,20 +58,8 @@
   cursor: pointer;
   width: max-content;
   text-align: center;
-  perspective: 1000px;
-  // Override text decoration from default links
-  text-decoration: none !important;
-
   .en,
   .he {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden; // For Safari
   }
@@ -91,6 +74,7 @@ body.show-hebrew .word {
   transform: rotateX(180deg);
 }
 
+// Wordplay custom styles
 // Special styling for the main "place" word to make it stand out
 .label-place .word {
   background-color: #333;
@@ -116,4 +100,23 @@ body.show-hebrew .word {
   .wordplay-header {
     flex-direction: row-reverse;
   }
+}
+
+
+
+//TEMP
+
+.wordplay-zone {
+  outline: 1px dashed red; /* to see layout frames */
+}
+
+.zone-pinned {
+  background: rgba(255,255,0,0.2);
+  min-width: 100px;
+}
+
+.zone-pile {
+  background: rgba(0,255,255,0.2);
+  display: flex;
+  gap: 1rem;
 }

@@ -11,6 +11,7 @@
   perspective: 1200px;
   border-bottom: 1px solid $border-color;
   background-color: $background-color;
+  width: 100%;
 }
 
 .wordpile-container {
@@ -25,8 +26,11 @@
   margin: 0;
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
+  align-items: center; // Vertically align items in the middle.
   gap: 0.75rem;
+  padding: 0; // Remove default list padding.
+  margin: 0; // Remove default list margin.
+  list-style-type: none; // Remove list bullets.
 }
 
 .word-clone--active {
@@ -36,12 +40,14 @@
 
 .word-item {
   display: inline-block;
+  margin-left: 1em;
 }
 
 .pinned-word {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
+  margin-right: auto;
 }
 
 .word {

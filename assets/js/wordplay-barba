@@ -1,0 +1,57 @@
+document.addEventListener('DOMContentLoaded', () => {
+    // The base URL of your site from the Jekyll config.
+    const BASE_URL = '/blog';
+
+    // This is our custom transition that uses the GSAP animation.
+    const wordSwapTransition = {
+        name: 'word-swap',
+        // This hook is called when a link is clicked.
+        // `data.trigger` is the link element that was clicked.
+        leave(data) {
+            // We only run this animation if a word in the `.wordpile` was clicked.
+            if (data.trigger.closest && data.trigger.closest('.wordpile')) {
+                console.log('Leaving page with custom word-swap transition.');
+                // Call the animation function from wordplay.js and return the GSAP timeline.
+                // Barba will wait for the animation to finish.
+                return createWordSwapAnimation(data.trigger);
+            }
+            // For all other links, do nothing and let Barba perform its default transition.
+        },
+        enter(data) {
+            console.log('Entering new page.');
+        }
+    };
+
+    // Initialize Barba with our custom transition.
+    barba.init({
+        debug: true, // Set to false for production
+        transitions: [
+            wordSwapTransition
+        ],
+        // This part is crucial for fixing the Fetch error.
+        // We are creating a custom "request" logic.
+        request: (url, { trigger, method, headers }) => {
+            // Create a URL object to easily parse the requested URL.
+            const urlObject = new URL(url);
+
+            // Check if the path is missing the baseurl and if it's not already there.
+            if (!urlObject.pathname.startsWith(BASE_URL)) {
+                // If it's missing, prepend the baseurl to the path.
+                const correctedPath = BASE_URL + urlObject.pathname;
+                console.warn(`Corrected URL from ${urlObject.pathname} to ${correctedPath}`);
+                // Return the fetch promise with the corrected URL.
+                return fetch(correctedPath, { method, headers });
+            }
+
+            // If the URL is already correct, just let fetch proceed normally.
+            return fetch(url, { method, headers });
+        }
+    });
+
+    // This hook runs after Barba has loaded the new page content.
+    barba.hooks.after(() => {
+        // Reset the 'clicked-once' class on any links that have it.
+        document.querySelectorAll('.clicked-once').forEach(el => el.classList.remove('clicked-once'));
+    });
+
+});

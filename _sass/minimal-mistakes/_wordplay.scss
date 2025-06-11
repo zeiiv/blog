@@ -1,119 +1,141 @@
-/* ==========================================================================
-   Wordplay Header Component (v2 - Corrected Layout)
-   ========================================================================== */
+/**
+ * @file wordplay.js
+ * @description Provides the GSAP animation function for the header word-swapping effect.
+ * This function implements a 3-phase animation plan for a fluid and choreographed feel.
+ * @param {HTMLElement} clickedLink - The link element that was clicked.
+ * @returns {gsap.core.Timeline} A GSAP timeline instance that Barba can 'await'.
+ */
+function createWordSwapAnimation(clickedLink) {
+  // --- Announce the start of the animation creation.
+  //console.log('[wordplay] Animation triggered for ${clickedLink.textContent.trim()}');
 
-.wordplay-header {
-  // Use space-between to push the word pile and lang toggle to opposite ends.
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 2rem;
-  perspective: 1200px;
-  border-bottom: 1px solid $border-color;
-  background-color: $background-color;
-  width: 100%;
-}
+  // ===================================================================================
+  // SETUP: Gather all elements and measurements needed for the animation.
+  // ===================================================================================
 
-.wordpile-container {
-  display: flex;
-  align-items: center;
-  gap: 2rem;
-}
+  const wordplayHeader = document.getElementById('wordplay-header');
+  const wordPileUl = wordplayHeader.querySelector('.wordpile');
 
-.wordpile {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center; // Vertically align items in the middle.
-  gap: 0.75rem;
-  padding: 0; // Remove default list padding.
-  margin: 0; // Remove default list margin.
-  list-style-type: none; // Remove list bullets.
-}
+  // Use specific class selectors to identify each element's role.
+  const pinnedWordLi = wordPileUl.querySelector('.pinned-word');
+  const clickedLi = clickedLink.closest('.word-item');
+  const staticItemLi = wordPileUl.querySelector('.static-word');
 
-.word-clone--active {
-  // A subtle shadow to make the word "pop" off the page during animation
-  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.15));
-}
+  // Safety check to ensure all critical elements exist before proceeding.
+  if (!pinnedWordLi || !clickedLi || !staticItemLi) {
+    console.error('wordplay Animation aborted A critical element pinned-word static-word or the clicked word-item was not found.);
+    return null;
+  }
+  
+  // The "pile" is correctly defined as all items that are NOT pinned and NOT static.
+  const allPileItems = Array.from(wordPileUl.children).filter(item => item !== pinnedWordLi && item !== staticItemLi);
+  
+  clickedLink.classList.add('clicked-once');
 
-.word-item {
-  display: inline-block;
-  margin-left: 1em;
-}
+  // Get the initial positions (bounding boxes) of the two words that will move.
+  const clickedRect = clickedLink.getBoundingClientRect();
+  const activeRect = pinnedWordLi.getBoundingClientRect();
 
-.pinned-word {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-right: auto;
-}
+  // Create clones of the words. These clones are what we will animate.
+  const movingToActive = clickedLink.cloneNode(true); // The clicked word.
+  const movingToPile = pinnedWordLi.querySelector('.word').cloneNode(true); // The old pinned word.
+  
+  // ===================================================================================
+  // PHASE 1: "LIFT-OFF"
+  // ===================================================================================
 
-.word {
-  // Inherit base button styles from the Minimal Mistakes theme
-  @extend .btn;
-  @extend .btn--small;
+  const masterTimeline = gsap.timeline({
+    onComplete: () => {
+      // Cleanup: remove the clones and restore original element visibility when done.
+      movingToActive.remove();
+      movingToPile.remove();
+      gsap.set([clickedLi, pinnedWordLi, ...allPileItems, staticItemLi], { opacity: 1 });
+      console.log('[wordplay] Animation complete.');
+    }
+  });
 
-  // --- Custom styles for 3D language flip ---
-  position: relative;
-  transform-style: preserve-3d;
-  // Keep the transform separate so it doesn't get overridden by .btn transitions
-  transition: transform 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55);
-  cursor: pointer;
-  width: max-content;
-  text-align: center;
-  perspective: 1000px;
-  // Override text decoration from default links
-  text-decoration: none !important;
+  // Fade out all non-essential pile words to draw focus.
+  const otherPileItems = allPileItems.filter(item => item !== clickedLi);
+  masterTimeline.to(otherPileItems, { opacity: 0.5, duration: 0.2, ease: 'power1.in' }, 0);
 
-  .en,
-  .he {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden; // For Safari
+  // Position the clones exactly on top of their original counterparts.
+  gsap.set([movingToActive, movingToPile], { position: 'fixed', margin: 0, whiteSpace: 'nowrap' });
+  gsap.set(movingToActive, { top: clickedRect.top, left: clickedRect.left, width: clickedRect.width, height: clickedRect.height });
+  gsap.set(movingToPile, { top: activeRect.top, left: activeRect.left, width: activeRect.width, height: activeRect.height });
+
+  // Add clones to the page and hide the originals to start the animation.
+  document.body.appendChild(movingToActive);
+  document.body.appendChild(movingToPile);
+  gsap.set([clickedLi, pinnedWordLi], { opacity: 0 });
+  
+  // "Pop" the active words by scaling them and adding a shadow.
+  masterTimeline.to([movingToActive, movingToPile], {
+    scale: 1.1,
+    duration: 0.2,
+    ease: 'power2.out',
+    onStart: () => {
+      movingToActive.classList.add('word-clone--active');
+      movingToPile.classList.add('word-clone--active');
+    }
+  }, 0);
+
+  // ===================================================================================
+  // PHASE 2: "THE SAFE TRAVEL"
+  // ===================================================================================
+
+  const travelFloor1 = 50;  // Vertical travel path for word going TO the pile.
+  const travelFloor2 = 100; // Vertical travel path for word going TO the pinned spot.
+  const travelDuration = 0.8;
+
+  // Animate the OLD PINNED word moving TO the PILE.
+  masterTimeline.to(movingToPile, {
+    y: `+=${travelFloor1}`,
+    x: clickedRect.left - activeRect.left, // Its destination is the clicked word's original spot.
+    scale: 0.9,
+    duration: travelDuration,
+    ease: 'power2.inOut'
+  }, ">-0.1"); // Stagger start time.
+
+  // Animate the CLICKED word moving TO the PINNED position.
+  masterTimeline.to(movingToActive, {
+    y: `+=${travelFloor2}`,
+    x: activeRect.left - clickedRect.left, // Its destination is the pinned word's original spot.
+    scale: 1.2,
+    duration: travelDuration,
+    ease: 'power2.inOut'
+  }, "<"); // Start at the same time as the animation above.
+
+  // Animate the PILE REARRANGING itself to close the gap.
+  const clickedIndexInPile = allPileItems.findIndex(item => item === clickedLi);
+  const itemsToShiftLeft = allPileItems.slice(clickedIndexInPile + 1);
+  const gapWidth = clickedRect.width + (parseFloat(getComputedStyle(clickedLi).marginLeft) || 0);
+
+  if (itemsToShiftLeft.length > 0) {
+    masterTimeline.to(itemsToShiftLeft, {
+      x: `-=${gapWidth}`,
+      duration: travelDuration * 0.8,
+      ease: 'power2.inOut'
+    }, "<+0.1");
   }
 
-  .he {
-    transform: rotateX(180deg);
-  }
-}
+  // ===================================================================================
+  // PHASE 3: "THE LANDING"
+  // ===================================================================================
+  
+  // Animate the words settling back into place on the main floor.
+  masterTimeline.to([movingToActive, movingToPile], {
+    y: 0,
+    scale: 1,
+    duration: 0.3,
+    ease: 'back.out(1.7)',
+    onStart: () => {
+      movingToActive.classList.remove('word-clone--active');
+      movingToPile.classList.remove('word-clone--active');
+    }
+  });
 
-// When this class is on the body, all words flip
-body.show-hebrew .word {
-  transform: rotateX(180deg);
-}
+  // Fade the other pile words back to full opacity.
+  masterTimeline.to(otherPileItems, { opacity: 1, duration: 0.3, ease: 'power1.out' }, "<");
 
-// Special styling for the main "place" word to make it stand out
-.label-place .word {
-  background-color: #333;
-  color: #fff;
-  border-color: #333;
-
-  &:hover {
-    background-color: #000;
-    border-color: #000;
-  }
-}
-
-// Styling for the language toggle button
-.lang-toggle-btn {
-  text-decoration: none !important;
-  .word {
-    background-color: #f0f0f0;
-  }
-}
-
-// --- RTL Support ---
-[dir="rtl"] {
-  .wordplay-header {
-    flex-direction: row-reverse;
-  }
+  return masterTimeline;
 }

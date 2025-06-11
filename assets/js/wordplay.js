@@ -8,9 +8,9 @@
 /*
 import { gsap } from "gsap";
 import { Flip } from "gsap/Flip";
-
-gsap.registerPlugin(Flip);
 */
+gsap.registerPlugin(Flip);
+
 
 function createWordSwapAnimation(clickedItem) {
   console.log(`[wordplay] FLIP: Swapping "${clickedItem.textContent.trim()}"`);

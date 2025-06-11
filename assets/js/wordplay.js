@@ -1,129 +1,129 @@
-function initWordplay() {
-  console.log("[wordplay] initWordplay started");
+//======================================================================
+//  1. YOUR ORIGINAL GSAP WORD-SWAPPING ANIMATION
+//  We've renamed your original function to be more specific.
+//======================================================================
+function initWordSwapAnimation() {
+  console.log("[wordplay] Initializing custom GSAP word swap animation.");
+
   const wordplayHeader = document.getElementById('wordplay-header');
   if (!wordplayHeader) {
-    console.error("[wordplay] ERROR: #wordplay-header not found");
+    // This is not an error, the element just might not be on this page.
+    console.log("[wordplay] #wordplay-header not found on this page. Skipping swap animation.");
     return;
   }
-
-  const pinnedWordLi = wordplayHeader.querySelector('.pinned-word');
-  const wordPileUl = wordplayHeader.querySelector('.wordpile');
-  const langToggle = document.getElementById('lang-toggle-link');
-
-  if (!pinnedWordLi || !wordPileUl) {
-    console.error("[wordplay] ERROR: .pinned-word or .wordpile missing");
-    return;
-  }
-
-  /* --- A. Language Toggle ---
-  if (langToggle) {
-    langToggle.addEventListener('click', (e) => {
-      e.preventDefault();
-      console.log("[wordplay] Language toggle clicked");
-      document.body.classList.toggle('show-hebrew');
-    });
-  } else {
-    console.warn("[wordplay] WARNING: #lang-toggle-link not found");
-  }*/
 
   // --- B. Word pile click handler ---
-  wordPileUl.addEventListener('click', (e) => {
-    console.log("[wordplay] Word pile clicked");
-    const clickedLink = e.target.closest('.word-item:not(.pinned-word) a.word');
-    if (!clickedLink) {
-      console.log("[wordplay] Clicked element is not a valid word link");
-      return;
-    }
-    e.preventDefault();
-
-    if (clickedLink.classList.contains('clicked-once')) {
-      console.warn("[wordplay] Already clicked — skipping duplicate trigger");
-      return;
-    }
-    clickedLink.classList.add('clicked-once');
-
-    const clickedLi = clickedLink.closest('.word-item');
-    const activeWordDiv = pinnedWordLi.querySelector('.word');
-    if (!activeWordDiv) {
-      console.error("[wordplay] ERROR: No active pinned word found");
-      return;
-    }
-
-    const href = clickedLink.href;
-    console.log(`[wordplay] Animating navigation to: ${href}`);
-
-    const clickedRect = clickedLink.getBoundingClientRect();
-    const activeRect = activeWordDiv.getBoundingClientRect();
-
-    const movingToActive = clickedLink.cloneNode(true);
-    const movingToPile = activeWordDiv.cloneNode(true);
-
-    Object.assign(movingToActive.style, {
-      position: 'fixed',
-      top: `${clickedRect.top}px`,
-      left: `${clickedRect.left}px`,
-      width: `${clickedRect.width}px`,
-      height: `${clickedRect.height}px`,
-      margin: 0,
-      zIndex: 9999,
-    });
-
-    Object.assign(movingToPile.style, {
-      position: 'fixed',
-      top: `${activeRect.top}px`,
-      left: `${activeRect.left}px`,
-      width: `${activeRect.width}px`,
-      height: `${activeRect.height}px`,
-      margin: 0,
-      zIndex: 9998,
-    });
-
-    document.body.appendChild(movingToActive);
-    document.body.appendChild(movingToPile);
-
-    gsap.set([clickedLi, activeWordDiv], { opacity: 0 });
-
-    console.log("[wordplay] Triggering native link click for Barba");
-    setTimeout(() => clickedLink.click(), 0);
-
-    const timeline = gsap.timeline({
-      defaults: { duration: 0.7, ease: 'power2.inOut' },
-      onComplete: () => {
-        console.log("[wordplay] Animation complete");
-        movingToActive.remove();
-        movingToPile.remove();
+  const wordPileUl = wordplayHeader.querySelector('.wordpile');
+  if (wordPileUl) {
+    wordPileUl.addEventListener('click', (e) => {
+      console.log("[wordplay] Word pile clicked");
+      const clickedLink = e.target.closest('.word-item:not(.pinned-word) a.word');
+      if (!clickedLink) {
+        return;
       }
+      e.preventDefault();
+
+      if (clickedLink.classList.contains('clicked-once')) {
+        console.warn("[wordplay] Already clicked — skipping duplicate trigger");
+        return;
+      }
+      clickedLink.classList.add('clicked-once');
+
+      const pinnedWordLi = wordplayHeader.querySelector('.pinned-word');
+      const clickedLi = clickedLink.closest('.word-item');
+      const activeWordDiv = pinnedWordLi.querySelector('.word');
+
+      if (!pinnedWordLi || !activeWordDiv) {
+        console.error("[wordplay] ERROR: Critical pinned word elements are missing.");
+        return;
+      }
+      
+      console.log(`[wordplay] Animating navigation to: ${clickedLink.href}`);
+
+      const clickedRect = clickedLink.getBoundingClientRect();
+      const activeRect = activeWordDiv.getBoundingClientRect();
+
+      const movingToActive = clickedLink.cloneNode(true);
+      const movingToPile = activeWordDiv.cloneNode(true);
+
+      Object.assign(movingToActive.style, {
+        position: 'fixed',
+        top: `${clickedRect.top}px`, left: `${clickedRect.left}px`,
+        width: `${clickedRect.width}px`, height: `${clickedRect.height}px`,
+        margin: 0, zIndex: 9999,
+      });
+      Object.assign(movingToPile.style, {
+        position: 'fixed',
+        top: `${activeRect.top}px`, left: `${activeRect.left}px`,
+        width: `${activeRect.width}px`, height: `${activeRect.height}px`,
+        margin: 0, zIndex: 9998,
+      });
+
+      document.body.appendChild(movingToActive);
+      document.body.appendChild(movingToPile);
+
+      gsap.set([clickedLi, activeWordDiv], { opacity: 0 });
+
+      // Trigger the Barba navigation
+      setTimeout(() => clickedLink.click(), 0);
+
+      const timeline = gsap.timeline({
+        defaults: { duration: 0.7, ease: 'power2.inOut' },
+        onComplete: () => {
+          movingToActive.remove();
+          movingToPile.remove();
+        }
+      });
+      timeline.to(movingToActive, { x: activeRect.left - clickedRect.left, y: activeRect.top - clickedRect.top }, 0);
+      timeline.to(movingToPile, { x: clickedRect.left - activeRect.left, y: clickedRect.top - activeRect.top }, 0);
     });
+  }
+}
 
-    timeline.to(movingToActive, {
-      x: activeRect.left - clickedRect.left,
-      y: activeRect.top - clickedRect.top
-    }, 0);
+//======================================================================
+//  2. THE NEW LETTER-REVEAL ANIMATION
+//  This function uses the 'new WordPlay' library for a different effect.
+//======================================================================
+function initLetterRevealAnimation() {
+  console.log("[wordplay] Initializing letter reveal animation.");
+  
+  const wordplayElements = document.querySelectorAll('.header__wordplay');
+  if (wordplayElements.length === 0) {
+    // Not an error, this effect might not be used on every page.
+    console.log("[wordplay] '.header__wordplay' not found on this page. Skipping letter reveal.");
+    return;
+  }
 
-    timeline.to(movingToPile, {
-      x: clickedRect.left - activeRect.left,
-      y: clickedRect.top - activeRect.top
-    }, 0);
+  wordplayElements.forEach(element => {
+    // This is the command that turns the letter animation ON.
+    new WordPlay(element, {
+      className: "header__wordplay",
+      mode: "letter",
+      speed: 0.5,
+      delay: 0.025
+    });
   });
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  console.log("[wordplay] DOMContentLoaded");
-  initWordplay();
-});
+//======================================================================
+//  3. MASTER INITIALIZATION AND EVENT LISTENERS
+//  This single, clean set of listeners calls all our functions.
+//======================================================================
+function initializePageAnimations() {
+  // This one function will run everything we need.
+  initWordSwapAnimation();
+  initLetterRevealAnimation();
+}
 
+// Run all animations when the page first loads.
+document.addEventListener('DOMContentLoaded', initializePageAnimations);
+
+// Run all animations after every page transition (if using Barba.js).
 if (window.barba) {
-  barba.hooks.enter(() => {
-    console.log("[wordplay] Barba enter hook triggered");
-    const header = document.getElementById('wordplay-header');
-    if (header) {
-      header.dataset.wordplayInitialized = 'false';
-    }
-  });
-
   barba.hooks.after(() => {
-    console.log("[wordplay] Barba after hook triggered");
+    // Reset the 'clicked-once' state from your original code
     document.querySelectorAll('.clicked-once').forEach(el => el.classList.remove('clicked-once'));
-    initWordplay();
+    // Re-run all initializations for the new page
+    initializePageAnimations();
   });
 }

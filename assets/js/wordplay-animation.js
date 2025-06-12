@@ -12,17 +12,17 @@ function animateWordSwap({ selectedItem, pinnedItem, pileItems, pileZone, pinned
         return;
     }
 
-    const selectedBox = selectedItem.getBoundingClientRect();
-    const pinnedBox = pinnedItem?.getBoundingClientRect();
+    const selectedBox = selectedItem ? getBoundingClientRect() : null;
+    const pinnedBox = pinnedItem ? getBoundingClientRect() : null;
     const pileArray = Array.from(pileItems).filter(el => el !== selectedItem);
 
     // Determine pile target location (first word-item in pile)
     const targetPileItem = pileArray[0];
-    const targetBox = targetPileItem?.getBoundingClientRect();
+    const targetBox = targetPileItem ? targetPileItem.getBoundingClientRect() : null;
 
     // Clone selected + pinned
-    const selectedClone = selectedItem.cloneNode(true);
-    const pinnedClone = pinnedItem?.cloneNode(true);
+    const selectedClone = selectedItem ? cloneNode(true) : null;
+    const pinnedClone = pinnedItem ? pinnedItem.cloneNode(true) : null;
 
     function styleClone(clone, box, z = 1000) {
         Object.assign(clone.style, {
@@ -47,7 +47,7 @@ function animateWordSwap({ selectedItem, pinnedItem, pileItems, pileZone, pinned
     pileArray.forEach((el, i) => {
         el.style.transition = 'transform 0.4s ease-in-out';
         el.style.transform = `translateX(-${shiftX}px)`;
-    }};
+    }
 
 // Animate selected-move: down → left → up
 const selectedFrames = [

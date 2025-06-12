@@ -39,9 +39,80 @@
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/gsap.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@barba/core@2.10.3/dist/barba.umd.min.js"></script>
-<script src="{{ '/assets/js/barba-init.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/wordplay.js' | relative_url }}"></script>
 <script src="{{ '/assets/js/wordplay-animation.js' | relative_url }}"></script>
+<script>
+      document.addEventListener('DOMContentLoaded', function() {
+        
+        // This function will be called after every page transition.
+        function initializePageScripts() {
+          console.log('[barba] New page ready.');
+          // You can add any other functions that need to run on a new page here.
+        }
+
+        // Initialize Barba.js with our transition rules.
+        barba.init({
+          debug: true, // Turn this to false for production
+          // Define all our page transitions.
+          transitions: [{
+            // ===== RULE #1: THE DEFAULT FADE TRANSITION =====
+            // This runs for ALL links that don't match other rules.
+            name: 'default-fade',
+            leave: function(data) {
+              // Animate the old page content fading out.
+              return gsap.to(data.current.container, { opacity: 0, duration: 0.25 });
+            },
+            enter: function(data) {
+              // Animate the new page content fading in.
+              return gsap.from(data.next.container, { opacity: 0, duration: 0.25 });
+            }
+          }, {
+            // ===== RULE #2: OUR CUSTOM WORD SWAP TRANSITION =====
+            name: 'word-swap',
+            // This rule tells Barba to ONLY use this transition if the
+            // link that was clicked is inside the ".wordpile" container.
+            custom: function({ trigger }) {
+              return trigger.closest && trigger.closest('.wordpile');
+            },
+            
+            leave: function(data) {
+              console.log('[barba] Word-swap transition starting.');
+              // The `data.trigger` is the link that was clicked.
+              var clickedLink = data.trigger;
+              var header = document.getElementById('wordplay-header');
+              var pinnedItem = header.querySelector('.pinned-word');
+              var pileItems = header.querySelectorAll('.word-item:not(.pinned-word)');
+
+              // This solves the "Missing required elements" error.
+              // We gather the elements here and pass them to the animation function.
+              return animateWordSwap({
+                selectedItem: clickedLink.closest('.word-item'),
+                pinnedItem: pinnedItem,
+                pileItems: pileItems
+              });
+            },
+            enter: function(data) {
+              // Also fade in the new container for a smooth arrival.
+              gsap.from(data.next.container, { opacity: 0, duration: 0.4 });
+            }
+          }],
+
+          // This handles the persistent header element.
+          views: [{
+            namespace: 'home', // Make sure your pages have a `namespace` in their front matter.
+            beforeEnter: function(data) {
+              // This code will run before entering a page with this namespace.
+            }
+          }]
+        });
+
+        // Use a Barba hook to re-run necessary functions after a page transition.
+        barba.hooks.after(function() {
+          initializePageScripts();
+        });
+
+      });
+    </script>
 
 {% include scripts.html %}
 </body>

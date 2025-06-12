@@ -1,91 +1,108 @@
 /**
- * wordplay-animate.js
- * Handles 3-part header animation:
- * - selected-move (pile → pinned)
- * - pinned-move (pinned → pile)
- * - piled-move (shift to fill gap)
+ * file wordplay-animation.js
+ * description Provides the Web Animations API logic for the header word-swapping effect.
+ * This version is written in ES5-compatible JavaScript to work with older build tools like Uglifier.
  */
 
-function animateWordSwap({ selectedItem, pinnedItem, pileItems, pileZone, pinnedZone }) {
-    if (!selectedItem || !pileZone || !pinnedZone) {
-        console.warn('[wordplay-animate] Missing required elements.');
+function animateWordSwap(options) {
+    // Destructure options with a fallback for safety.
+    var selectedItem = options.selectedItem;
+    var pinnedItem = options.pinnedItem;
+    var pileItems = options.pileItems;
+    
+    // Safety check to ensure all required elements were passed in.
+    if (!selectedItem || !pinnedItem || !pileItems) {
+        console.warn('[wordplay-animate] Animation aborted: Missing required elements.');
         return;
     }
 
-    const selectedBox = selectedItem ? getBoundingClientRect() : null;
-    const pinnedBox = pinnedItem ? getBoundingClientRect() : null;
-    const pileArray = Array.from(pileItems).filter(el => el !== selectedItem);
+    // Get the bounding boxes for coordinate calculations.
+    var selectedBox = selectedItem.getBoundingClientRect();
+    var pinnedBox = pinnedItem.getBoundingClientRect();
+    var pileArray = Array.prototype.slice.call(pileItems).filter(function(el) {
+        return el !== selectedItem;
+    });
 
-    // Determine pile target location (first word-item in pile)
-    const targetPileItem = pileArray[0];
-    const targetBox = targetPileItem ? targetPileItem.getBoundingClientRect() : null;
+    // Determine the target location for the old pinned item.
+    var targetPileItem = pileArray[0];
+    // If there are no other items in the pile, the old pinned word will animate to where the selected word was.
+    var targetBox = targetPileItem ? targetPileItem.getBoundingClientRect() : selectedBox;
 
-    // Clone selected + pinned
-    const selectedClone = selectedItem ? cloneNode(true) : null;
-    const pinnedClone = pinnedItem ? pinnedItem.cloneNode(true) : null;
+    // Clone the elements that will be animated.
+    var selectedClone = selectedItem.cloneNode(true);
+    var pinnedClone = pinnedItem.cloneNode(true);
 
-    function styleClone(clone, box, z = 1000) {
+    // Helper function to style the clones.
+    function styleClone(clone, box, z) {
+        z = z || 1000; // Default z-index.
         Object.assign(clone.style, {
             position: 'fixed',
-            top: `${box.top}px`,
-            left: `${box.left}px`,
-            width: `${box.width}px`,
-            height: `${box.height}px`,
-            margin: 0,
-            zIndex: z,
-            pointerEvents: 'none',
-            transition: 'transform 0.6s ease-in-out',
+            top: box.top + 'px',
+            left: box.left + 'px',
+            width: box.width + 'px',
+            height: box.height + 'px',
+            margin: '0',
+            zIndex: z.toString(),
+            pointerEvents: 'none' // Prevent clones from interfering with mouse events.
         });
-        document.body.appendChild(clone);
     }
 
     styleClone(selectedClone, selectedBox, 1001);
-    if (pinnedClone) styleClone(pinnedClone, pinnedBox, 1000);
+    styleClone(pinnedClone, pinnedBox, 1000);
 
-    // Shift piled words left
-    const shiftX = selectedBox.width + 8;
-    pileArray.forEach((el, i) => {
+    // Add clones to the body and hide the originals.
+    document.body.appendChild(selectedClone);
+    document.body.appendChild(pinnedClone);
+    selectedItem.style.opacity = '0';
+    pinnedItem.style.opacity = '0';
+
+    // --- Animation Logic using Web Animations API ---
+
+    // 1. Shift the remaining pile words to close the gap.
+    var shiftX = selectedBox.width + 8; // Assuming 8px gap.
+    pileArray.forEach(function(el) {
         el.style.transition = 'transform 0.4s ease-in-out';
-        el.style.transform = `translateX(-${shiftX}px)`;
-    }
+        el.style.transform = 'translateX(-' + shiftX + 'px)';
+    });
 
-// Animate selected-move: down → left → up
-const selectedFrames = [
-    { transform: 'translateY(0px)' },
-    { transform: `translateY(20px)` },
-    { transform: `translate(${pinnedBox.left - selectedBox.left}px, 20px)` },
-    { transform: `translate(${pinnedBox.left - selectedBox.left}px, ${pinnedBox.top - selectedBox.top}px)` },
-    selectedClone.animate(selectedFrames, {
-        duration: 600,
-        easing: 'ease-in-out',
-        fill: 'forwards',
-    }
-  ];
-
-// Animate pinned-move: delayed down → right → up
-if (pinnedClone && targetBox) {
-    const pinnedFrames = [
+    // 2. Define keyframes for the selected word's animation.
+    var selectedFrames = [
         { transform: 'translateY(0px)' },
-        { transform: 'translateY(40px)' },
-        { transform: `translate(${targetBox.left - pinnedBox.left}px, 40px)` },
-        { transform: `translate(${targetBox.left - pinnedBox.left}px, ${targetBox.top - pinnedBox.top}px)` },
+        { transform: 'translateY(20px)' },
+        { transform: 'translate(' + (pinnedBox.left - selectedBox.left) + 'px, 20px)' },
+        { transform: 'translate(' + (pinnedBox.left - selectedBox.left) + 'px, ' + (pinnedBox.top - selectedBox.top) + 'px)' }
     ];
 
-    setTimeout(() => {
-        pinnedClone.animate(pinnedFrames, {
-            duration: 600,
-            easing: 'ease-in-out',
-            fill: 'forwards',
-        });
-    }, 80);
-}
+    // 3. Define keyframes for the old pinned word's animation.
+    var pinnedFrames = [
+        { transform: 'translateY(0px)' },
+        { transform: 'translateY(-20px)' },
+        { transform: 'translate(' + (targetBox.left - pinnedBox.left) + 'px, -20px)' },
+        { transform: 'translate(' + (targetBox.left - pinnedBox.left) + 'px, ' + (targetBox.top - pinnedBox.top) + 'px)' }
+    ];
 
-// Cleanup after animation
-setTimeout(() => {
-    selectedClone.remove();
-    if (pinnedClone) pinnedClone.remove();
-    pileArray.forEach(el => {
-        el.style.transform = '';
-        el.style.transition = '';
-    });
-}, 700);
+    var animationOptions = {
+        duration: 2000,
+        easing: 'ease-in-out',
+        fill: 'forwards'
+    };
+
+    // 4. Run the animations.
+    var selectedAnimation = selectedClone.animate(selectedFrames, animationOptions);
+    pinnedClone.animate(pinnedFrames, animationOptions);
+
+    // 5. Cleanup after the animation finishes.
+    selectedAnimation.onfinish = function() {
+        // Remove the clones.
+        selectedClone.remove();
+        pinnedClone.remove();
+
+        // Restore the original items' visibility and reset pile positions.
+        selectedItem.style.opacity = '1';
+        pinnedItem.style.opacity = '1';
+        pileArray.forEach(function(el) {
+            el.style.transition = '';
+            el.style.transform = '';
+        });
+    };
+}

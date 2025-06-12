@@ -49,7 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
       pileItems,
       pileZone,
       pinnedZone
-    });
+    }); 
 
     // Trigger navigation shortly after animation starts
     setTimeout(() => {

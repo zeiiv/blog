@@ -134,18 +134,18 @@ sass:
   sourcemap: never
   style: compressed
 
-jekyll-minifier:
-  compress_html:
-    clippings: [html, head, body]
-    comments: all
-    endings: all
-    profile: false
-    blanklines: true
-  ignore:
-      envs: [development]
-  uglifier_args:
-    harmony: true
-  exclude:
-    - assets/js/main.min.js
-    - assets/js/vendor
-    - assets/js/plugins
+#jekyll-minifier:
+#  compress_html:
+#    clippings: [html, head, body]
+#    comments: all
+#    endings: all
+#    profile: false
+#    blanklines: true
+#  ignore:
+#      envs: [development]
+#  uglifier_args:
+#    harmony: true
+#  exclude:
+#    - assets/js/main.min.js
+#    - assets/js/vendor
+#    - assets/js/plugins

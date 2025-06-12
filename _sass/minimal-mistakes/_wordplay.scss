@@ -5,7 +5,11 @@
 
 // --- Main Header & Menu Layout ---
 .wordplay-header {
+  opacity: 0;
+  visibility: hidden;
   width: 100%;
+  position: relative; /* Ensure z-index works, if not already set by theme */
+  z-index: 9999; /* Set a high z-index to ensure it's on top */
 }
 .wordplay-menu {
   display: flex;

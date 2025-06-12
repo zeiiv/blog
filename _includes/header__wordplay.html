@@ -1,17 +1,13 @@
 {%- assign lang = page.lang | default: 'en' -%}
-{%- assign nav_links = site.data.navigation.main -%}
-{%- assign url_parts = page.url | split: '/' -%}
-{%- assign current_page_slug = "" -%}
-{%- if url_parts.size > 1 -%}
-  {%- assign current_page_slug = url_parts[1] -%}
-{%- endif -%}
+{%- assign nav_links_en = site.data.navigation.main.en -%}
+{%- assign nav_links_he = site.data.navigation.main.he -%}
 
 <header class="wordplay-header" id="wordplay-header">
   <div class="wordplay-menu">
     
-    <!-- Left: Static 'place' -->
+    <!-- Left: Static 'place' word -->
     <div class="wordplay-zone zone-place">
-      <div class="word-item">
+      <div class="word-item static-word">
         <a href="{{ '/' | relative_url }}" class="label-place">
           <div class="word" data-id="place">
             <span class="en">{{ site.data.config-text['en'].title }}</span>
@@ -21,28 +17,36 @@
       </div>
     </div>
 
+    <!-- Pinned Zone: The word for the CURRENT page -->
     <div class="wordplay-zone zone-pinned">
-      {% for item in nav_links.en %}
-        {%- assign item_slug = item.url | remove: '/' -%}
+      {%- comment -%}
+        This is the new, more robust logic.
+        It compares the slugified title of the navigation item with the slugified
+        title of the current page. This avoids all issues with URL mismatches.
+      {%- endcomment -%}
+      {%- assign current_page_slug = page.title | slugify -%}
+      {% for item in nav_links_en %}
+        {%- assign item_slug = item.title | slugify -%}
         {% if item_slug == current_page_slug %}
-          <div class="word-item">
-            <a href="{{ item.url | relative_url }}" class="word" data-id="{{ item_slug }}" data-url="{{ item.url | relative_url }}">
+          <div class="word-item pinned-word">
+            <a href="{{ item.url | relative_url }}" class="word" data-id="{{ item_slug }}">
               <span class="en">{{ item.title }}</span>
-              <span class="he">{{ nav_links.he[forloop.index0].title }}</span>
+              <span class="he">{{ nav_links_he[forloop.index0].title }}</span>
             </a>
           </div>
         {% endif %}
       {% endfor %}
     </div>
 
+    <!-- Pile Zone: All OTHER words -->
     <div class="wordplay-zone zone-pile">
-      {% for item in nav_links.en %}
-        {%- assign item_slug = item.url | remove: '/' -%}
+      {% for item in nav_links_en %}
+        {%- assign item_slug = item.title | slugify -%}
         {% unless item_slug == current_page_slug %}
           <div class="word-item">
             <a href="{{ item.url | relative_url }}" class="word" data-id="{{ item_slug }}">
               <span class="en">{{ item.title }}</span>
-              <span class="he">{{ nav_links.he[forloop.index0].title }}</span>
+              <span class="he">{{ nav_links_he[forloop.index0].title }}</span>
             </a>
           </div>
         {% endunless %}

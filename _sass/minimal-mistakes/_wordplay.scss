@@ -1,154 +1,79 @@
 /* ==========================================================================
-   Wordplay Header Component (v2 - Corrected Layout)
+   Wordplay Header Styles (Final System)
    ========================================================================== */
 
+// --- Main Header Container ---
 .wordplay-header {
-  position: relative;
-  display: flex;
-  align-items: center;
-  min-height: $nav-height;
-  background: $secondary-color;
   width: 100%;
-  margin-left: calc(-50vw + 50%);
-  overflow: visible;
 }
 
+// --- Menu Layout (using Flexbox) ---
 .wordplay-menu {
   display: flex;
-  height: 5em;
+  align-items: center;
   width: 100%;
-  border: 3px solid blue;
+  padding: 1rem 1.5rem; // Add some padding for spacing
 }
 
+// --- Zone Styling ---
 .wordplay-zone {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 1.5em; // Space between items within a zone
 }
 
 .zone-place {
-  flex: 0 0 auto;
-  justify-content: flex-end;
-  text-align: right;
-  border: 1px solid pink;
-  margin-left: 1em;
+  // Static zone, no special styling needed for layout
 }
 
 .zone-pinned {
-  overflow: visible;
-  position: relative;
-  flex: 0 0 auto;
-  justify-content: flex-start;
-  text-align: left;
-  border: 1px solid pink;
-  padding-inline: 2rem;
+  // This is the key layout rule. It tells the pinned zone to take up
+  // all available space to its right, pushing the pile to the far side.
+  margin-right: auto;
 }
 
 .zone-pile {
-  overflow: visible;
-  position: relative; 
-  flex: 1 1 auto;
+  // The pile will now sit naturally on the right side.
+  flex-wrap: wrap; // Allow words to wrap if the screen is narrow
   justify-content: flex-end;
-  text-align: right;
-  border: 1px solid pink;
-  margin-right: 1em;
 }
 
+
+// --- Word Item Styling (Including 3D Language Flip) ---
+
 .word-item {
-  // --- Custom styles for 3D language flip ---
   position: relative;
   transform-style: preserve-3d;
-  // Keep the transform separate so it doesn't get overridden by .btn transitions
-  //transition: transform 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55);
   cursor: pointer;
-  width: max-content;
+
   .word {
     @extend .btn;
     @extend .btn--small;
     @extend .btn--primary;
-    transition: none;
+    transition: transform 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+
     .en,
     .he {
-      font-family: $font-family-base;
       backface-visibility: hidden;
-      -webkit-backface-visibility: hidden; // For Safari
+      -webkit-backface-visibility: hidden;
     }
 
     .he {
       transform: rotateX(180deg);
-
-      a {
-        display: flex;
-        width: 100%;
-        height: 100%;
-      }
     }
   }
 }
 
-// When this class is on the body, all words flip
+// Language flip trigger
 body.show-hebrew .word {
   transform: rotateX(180deg);
 }
 
-/*
-// Styling for the language toggle button
-.lang-toggle-btn {
-  text-decoration: none !important;
 
-  .word {
-    background-color: #f0f0f0;
-  }
-}
-*/
-// --- RTL Support ---
-[dir="rtl"] {
-  .wordplay-header {
-    flex-direction: row-reverse;
-  }
-}
-/*
-[data-barba="container"] {
-  opacity: 1;
-  transition: none;
-}
-
-[data-barba="container"].is-animating {
-  opacity: 0;
-}
-*/
-/* ==========================================================================
-   Animation States & Keyframes
-   ========================================================================== */
-
-// --- Define the flight paths for our words ---
-
-@keyframes travel-to-pinned {
-  0%   { transform: translate(0, 0) scale(1); }
-  40%  { transform: translate(0, 100px) scale(1.2); } // Move down and grow
-  60%  { transform: var(--travel-path-x) translateY(100px) scale(1.2); } // Move across
-  100% { transform: var(--travel-path-x) translateY(0) scale(1); } // Land
-}
-
-@keyframes travel-to-pile {
-  0%   { transform: translate(0, 0) scale(1); }
-  40%  { transform: translate(0, 50px) scale(0.9); } // Move down and shrink
-  60%  { transform: var(--travel-path-x) translateY(50px) scale(0.9); } // Move across
-  100% { transform: var(--travel-path-x) translateY(0) scale(1); } // Land
-}
-
-// Helper class to position the animated clones
+// --- Animation Helper Class (Used by app.js) ---
 .word-clone {
   position: fixed;
   z-index: 10000;
-  pointer-events: none; // Make sure clones can't be clicked
-}
-
-// When this class is added to a clone, the animation runs
-.word-clone.is-becoming-pinned {
-  animation: travel-to-pinned 0.8s cubic-bezier(0.65, 0, 0.35, 1) forwards;
-}
-
-.word-clone.is-returning-to-pile {
-  animation: travel-to-pile 0.8s cubic-bezier(0.65, 0, 0.35, 1) forwards;
+  pointer-events: none;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.15));
 }

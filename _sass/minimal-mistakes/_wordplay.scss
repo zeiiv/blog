@@ -91,7 +91,7 @@ body.show-hebrew .word {
   transform: rotateX(180deg);
 }
 
-
+/*
 // Styling for the language toggle button
 .lang-toggle-btn {
   text-decoration: none !important;
@@ -100,14 +100,14 @@ body.show-hebrew .word {
     background-color: #f0f0f0;
   }
 }
-
+*/
 // --- RTL Support ---
 [dir="rtl"] {
   .wordplay-header {
     flex-direction: row-reverse;
   }
 }
-
+/*
 [data-barba="container"] {
   opacity: 1;
   transition: none;
@@ -116,21 +116,39 @@ body.show-hebrew .word {
 [data-barba="container"].is-animating {
   opacity: 0;
 }
+*/
+/* ==========================================================================
+   Animation States & Keyframes
+   ========================================================================== */
 
-//TEMP
-/**
-.wordplay-zone {
-  outline: 1px dashed red;
-  /* to see layout frames 
+// --- Define the flight paths for our words ---
+
+@keyframes travel-to-pinned {
+  0%   { transform: translate(0, 0) scale(1); }
+  40%  { transform: translate(0, 100px) scale(1.2); } // Move down and grow
+  60%  { transform: var(--travel-path-x) translateY(100px) scale(1.2); } // Move across
+  100% { transform: var(--travel-path-x) translateY(0) scale(1); } // Land
 }
 
-.zone-pinned {
-  background: rgba(255, 255, 0, 0.2);
-  min-width: 100px;
+@keyframes travel-to-pile {
+  0%   { transform: translate(0, 0) scale(1); }
+  40%  { transform: translate(0, 50px) scale(0.9); } // Move down and shrink
+  60%  { transform: var(--travel-path-x) translateY(50px) scale(0.9); } // Move across
+  100% { transform: var(--travel-path-x) translateY(0) scale(1); } // Land
 }
 
-.zone-pile {
-  background: rgba(0, 255, 255, 0.2);
-  display: flex;
-  gap: 1rem;
-}*/
+// Helper class to position the animated clones
+.word-clone {
+  position: fixed;
+  z-index: 10000;
+  pointer-events: none; // Make sure clones can't be clicked
+}
+
+// When this class is added to a clone, the animation runs
+.word-clone.is-becoming-pinned {
+  animation: travel-to-pinned 0.8s cubic-bezier(0.65, 0, 0.35, 1) forwards;
+}
+
+.word-clone.is-returning-to-pile {
+  animation: travel-to-pile 0.8s cubic-bezier(0.65, 0, 0.35, 1) forwards;
+}

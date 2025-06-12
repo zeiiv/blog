@@ -2,6 +2,7 @@
 layout: bilingual
 title: "place with"
 title_he: ״מקום עם״
+namespace: wordplay-page 
 ---
 # Placeholder Page: With
 

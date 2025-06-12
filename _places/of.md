@@ -2,6 +2,7 @@
 layout: bilingual
 title: "place of"
 title_he: ״מקום של״
+namespace: wordplay-page 
 ---
 # Placeholder Page: Of
 

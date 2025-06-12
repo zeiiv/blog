@@ -2,6 +2,7 @@
 layout: bilingual
 title: "placeless"
 title_he: ״מקום חסר״
+namespace: wordplay-page 
 ---
 # Placeholder Page: Less
 

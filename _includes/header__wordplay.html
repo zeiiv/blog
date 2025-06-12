@@ -5,7 +5,7 @@
 <header class="wordplay-header" id="wordplay-header">
   <div class="wordplay-menu">
     
-    <!-- Left: Static 'place' word -->
+    <!-- Zone 1: The static "place" word -->
     <div class="wordplay-zone zone-place">
       <div class="word-item static-word">
         <a href="{{ '/' | relative_url }}" class="label-place">
@@ -17,19 +17,17 @@
       </div>
     </div>
 
-    <!-- Pinned Zone: The word for the CURRENT page -->
+    <!-- Zone 2: The Pinned Word. This zone will be empty on the homepage. -->
     <div class="wordplay-zone zone-pinned">
       {%- comment -%}
-        This is the new, more robust logic.
-        It compares the slugified title of the navigation item with the slugified
-        title of the current page. This avoids all issues with URL mismatches.
+        This is the corrected logic, inspired by your earlier working version.
+        It directly compares the page's URL with the URL from your navigation data.
+        This is the most reliable way to identify the current page.
       {%- endcomment -%}
-      {%- assign current_page_slug = page.title | slugify -%}
       {% for item in nav_links_en %}
-        {%- assign item_slug = item.title | slugify -%}
-        {% if item_slug == current_page_slug %}
+        {% if item.url == page.url %}
           <div class="word-item pinned-word">
-            <a href="{{ item.url | relative_url }}" class="word" data-id="{{ item_slug }}">
+            <a href="{{ item.url | relative_url }}" class="word" data-id="{{ item.title | slugify }}">
               <span class="en">{{ item.title }}</span>
               <span class="he">{{ nav_links_he[forloop.index0].title }}</span>
             </a>
@@ -38,13 +36,15 @@
       {% endfor %}
     </div>
 
-    <!-- Pile Zone: All OTHER words -->
+    <!-- Zone 3: The Pile of other words -->
     <div class="wordplay-zone zone-pile">
       {% for item in nav_links_en %}
-        {%- assign item_slug = item.title | slugify -%}
-        {% unless item_slug == current_page_slug %}
+        {%- comment -%}
+          This logic now correctly renders every word that is NOT for the current page.
+        {%- endcomment -%}
+        {% unless item.url == page.url %}
           <div class="word-item">
-            <a href="{{ item.url | relative_url }}" class="word" data-id="{{ item_slug }}">
+            <a href="{{ item.url | relative_url }}" class="word" data-id="{{ item.title | slugify }}">
               <span class="en">{{ item.title }}</span>
               <span class="he">{{ nav_links_he[forloop.index0].title }}</span>
             </a>

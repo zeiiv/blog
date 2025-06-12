@@ -12,10 +12,10 @@
 // needed if GSAP is already a global variable.
 /*
 import { gsap } from "gsap";
-import { Flip } = from "gsap/Flip";
+import { Flip } } from "gsap/Flip";
 */
 gsap.registerPlugin(Flip);
-barba.init();
+
 
 /**
  * Creates and plays a GSAP Flip animation to swap the clicked word-item
@@ -40,9 +40,12 @@ function createWordSwapAnimation(clickedItem) {
   console.log("pinnedZone:", pinnedZone);
 
   // Abort if essential elements are missing
-  if (!clickedItem || !activeItem || !pileZone || !pinnedZone) {
-    console.error('[wordplay] Flip animation aborted: one or more required elements are missing from the DOM.');
+  if (!clickedItem || !pileZone || !pinnedZone) {
+    console.error('[wordplay] Flip animation aborted: missing layout zones.');
     return null;
+  }
+  if (!activeItem) {
+    console.warn('[wordplay] No active (pinned) item found — performing first-time pin.');
   }
 
   // Ensure clickedItem is not already the active item (handled by event listener, but good to double check)
@@ -51,18 +54,19 @@ function createWordSwapAnimation(clickedItem) {
     return null;
   }
 
-  // --- Step 1: Capture the current state of elements before DOM changes ---
+  // --- Step 1 & 2: Capture the current state of elements before DOM changes and perform the DOM manipulations ---
   // Flip.getState needs to capture the position/size of elements *before* they are moved.
   // We are interested in the states of both the clicked item and the active item.
-  const flipState = Flip.getState([clickedItem, activeItem]);
+  let flipState;
 
-  // --- Step 2: Perform the DOM manipulations ---
-  // Move the clickedItem (from pileZone) to the pinnedZone.
-  // This implicitly removes clickedItem from pileZone.
-  pinnedZone.replaceChild(clickedItem, activeItem);
-
-  // Move the previously activeItem (now detached) to the pileZone.
-  pileZone.appendChild(activeItem);
+  if (activeItem) {
+    flipState = Flip.getState([clickedItem, activeItem]);
+    pinnedZone.replaceChild(clickedItem, activeItem);
+    pileZone.appendChild(activeItem);
+  } else {
+    flipState = Flip.getState([clickedItem]);
+    pinnedZone.appendChild(clickedItem);
+  }
 
   console.log('After DOM swap - pinned children count:', pinnedZone.children.length);
   console.log('After DOM swap - pile children count:', pileZone.children.length);
@@ -76,9 +80,9 @@ function createWordSwapAnimation(clickedItem) {
     ease: 'power2.inOut', // Easing function for smoother motion
     absolute: true, // Ensures elements are positioned absolutely during the flip for smooth movement
     // scale: true, // Removed scale: true unless explicit scaling is desired for the transition.
-                  // If elements should scale, re-add this and test.
+    // If elements should scale, re-add this and test.
     stagger: 0.02, // Small delay between individual elements animating, if multiple.
-    
+
     // Callbacks for elements entering or leaving the viewport/scope of the flip
     onEnter: el => {
       gsap.fromTo(el, { opacity: 0 }, { opacity: 1, duration: 0.3 });
@@ -87,7 +91,7 @@ function createWordSwapAnimation(clickedItem) {
     onLeave: el => {
       gsap.to(el, { opacity: 0, duration: 0.3 });
     },
-    
+
     // Callback when the entire Flip animation is complete
     onComplete: () => {
       // Clean up inline styles like z-index after the animation
@@ -105,7 +109,7 @@ function createWordSwapAnimation(clickedItem) {
 // Listen for the DOM to be fully loaded before attaching event listeners
 document.addEventListener('DOMContentLoaded', () => {
   const wordplayHeader = document.getElementById('wordplay-header');
-  
+
   // Exit if the wordplay header element is not found on the page
   if (!wordplayHeader) {
     console.warn('[wordplay] wordplay-header element with ID "wordplay-header" not found. Script will not run.');
@@ -123,7 +127,7 @@ document.addEventListener('DOMContentLoaded', () => {
   wordplayHeader.addEventListener('click', (e) => {
     // Find the closest .word-item ancestor of the clicked element
     const clickedItem = e.target.closest('.word-item');
-    
+
     // If no .word-item was clicked, do nothing
     if (!clickedItem) {
       console.log('[wordplay] Click event detected, but not on a .word-item element.');
@@ -143,7 +147,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Get the actual link element inside the clicked word-item
     const innerLink = clickedItem.querySelector('.word');
-    
+
     // Ensure the link exists and has an href before proceeding
     if (!innerLink || !innerLink.href) {
       console.warn('[wordplay] The clicked .word-item does not contain a valid link element (.word with href). Aborting.');
@@ -151,20 +155,22 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Prevent default navigation to allow GSAP and Barba.js to handle the transition
-    e.preventDefault(); 
+    e.preventDefault();
 
     // Start the GSAP Flip animation immediately
     const animationTimeline = createWordSwapAnimation(clickedItem);
 
-    // If Barba.js is available, initiate the page transition through its API
-    // This will run in parallel with the GSAP animation.
-    if (typeof Barba !== 'undefined' && Barba.go) {
-      console.log('[wordplay] Initiating Barba.js page transition to:', innerLink.href);
-     // Barba.go(innerLink.href); 
+    // Only proceed to navigation if the animation actually ran
+    if (animationTimeline) {
+      if (typeof barba !== 'undefined' && typeof barba.go === 'function') {
+        console.log('[wordplay] Initiating Barba.js page transition to:', innerLink.href);
+        barba.go(innerLink.href);
+      } else {
+        console.warn('[wordplay] Barba.js not detected or not ready. Navigating directly.');
+        window.location.href = innerLink.href;
+      }
     } else {
-      // Fallback if Barba.js is not found (though it should be if used)
-      console.warn('[wordplay] Barba.js not detected or Barba.go method not found. Navigating directly.');
-    //  window.location.href = innerLink.href;
+      console.warn('[wordplay] Animation failed — skipping navigation.');
     }
   });
 });

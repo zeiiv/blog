@@ -108,7 +108,14 @@ body.show-hebrew .word {
   }
 }
 
+[data-barba="container"] {
+  opacity: 1;
+  transition: none;
+}
 
+[data-barba="container"].is-animating {
+  opacity: 0;
+}
 
 //TEMP
 /**

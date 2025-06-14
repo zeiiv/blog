@@ -11,18 +11,19 @@
 </head>
 
 <body
+  data-barba="wrapper"
   class="layout--{{ page.layout | default: layout.layout }} skin--{{ site.minimal_mistakes_skin | default: 'default' }} lang--{{ page.lang | default: site.lang }}{% if page.classes or layout.classes %}{{ page.classes | default: layout.classes | join: ' ' | prepend: ' ' }}{% endif %}"
   dir="{% if page.rtl %}rtl{% else %}ltr{% endif %}">
 
 {% include_cached skip-links.html %}
 {% include header__wordplay.html %}
 
-<div data-barba="wrapper">
-  <main data-barba="container" class="initial-content">
+
+  <main data-barba="container" data-barba-namespace="home">
     {{ content }}
     {% include after-content.html %}
   </main>
-</div>
+
 
 <div id="footer" class="page__footer">
   <footer>
@@ -31,8 +32,9 @@
   </footer>
 </div>
     <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@barba/core@2.9.7/dist/barba.umd.min.js"></script>
+<script src="https://unpkg.com/@barba/core"></script>
+<script src="https://unpkg.com/@barba/css"></script>
     {% include scripts.html %}
-    <script src="{{ '/assets/js/app.js' | relative_url }}"></script>
+    <script src="{{ '/assets/js/wordplay.js' | relative_url }}"></script>
 </body>
 </html>

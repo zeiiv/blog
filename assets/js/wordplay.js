@@ -209,37 +209,16 @@ document.addEventListener('DOMContentLoaded', () => {
     // Click handler for word pile
     pileZone.addEventListener('click', e => {
         const selectedItem = e.target.closest('.word-item');
-        if (!selectedItem) return console.warn('[wordplay] Clicked outside word-item');
-
+        if (!selectedItem) return;
         e.preventDefault();
         const link = selectedItem.querySelector('a');
-        if (!link || !link.href) return console.warn('[wordplay] No href found in word-item');
-
-        const href = link.href;
+        // Use relative href so Barba intercepts navigation
+        const href = link.getAttribute('href');
         const pinnedItem = pinnedZone.querySelector('.word-item');
         const pileItems = pileZone.querySelectorAll('.word-item');
-
-        // Save animation context for use in Barba transition
-        window.wordplayTransition = {
-            selectedItem,
-            pinnedItem,
-            pileItems,
-            pileZone,
-            pinnedZone,
-            href
-        };
-
-        // Save href for transition
-        window.wordplayTransition = {
-            selectedItem,
-            pinnedItem,
-            pileItems,
-            pileZone,
-            pinnedZone,
-            href
-        };
-
-        // Let Barba handle the navigation later, during leave()
+        window.wordplayTransition = { selectedItem, pinnedItem, pileItems, pileZone, pinnedZone, href };
+        console.log('TRANSITION CONTEXT →', window.wordplayTransition);
+        // barba.go(href);
         console.log('[app] Word pile clicked: –', href);
     });
 
@@ -250,30 +229,32 @@ document.addEventListener('DOMContentLoaded', () => {
         updateWordplayZones(path);
     });
     
-    barba.use(barbaCss);
     barba.init({
-        sync: true,
-        transitions: [{
-            name: 'wordplay-transition',
-
-            leave(data) {
-                const ctx = window.wordplayTransition;
-                console.log('[barba] Running FLIP animation via animateWordSwapAnimation()');
-                if (ctx && animateWordSwapAnimation) {
-                    return new Promise(resolve => {
-                        animateWordSwapAnimation(ctx, resolve);
-                    });
-                }
-                return Promise.resolve();
-            },
-            enter(data) {
-                console.log('[barba] Entering new page');
-                // fade-in handled by CSS (barba/css)
-            },
-
-            once(data) {
-                // initial page load animations if needed
-            },
-        }]
+      sync: false,
+      transitions: [
+        {
+          name: 'wordplay-transition',
+          async once({ next }) {
+            // initial load: set header state
+            const path = window.location.pathname.replace(/^\/|\/$/g, '');
+            updateWordplayZones(path);
+          },
+          async leave({ current }) {
+            console.log('[barba] 🚪 leave hook for', window.wordplayTransition.href);
+            // fade out current content
+            await gsap.to(current.container, { opacity: 0, duration: 0.3 });
+            // start header FLIP animation without blocking
+            animateWordSwapAnimation(window.wordplayTransition);
+          },
+          async enter({ next }) {
+            console.log('[barba] 🚪 enter hook');
+            // update header for new page
+            const path = window.location.pathname.replace(/^\/|\/$/g, '');
+            updateWordplayZones(path);
+            // fade in new content
+            await gsap.from(next.container, { opacity: 0, duration: 0.3 });
+          },
+        },
+      ],
     });
 });

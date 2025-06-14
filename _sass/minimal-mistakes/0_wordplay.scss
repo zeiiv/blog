@@ -1,0 +1,120 @@
+/* ==========================================================================
+   Wordplay Header Component (v2 - Corrected Layout)
+   ========================================================================== */
+
+.wordplay-header {
+  // Use space-between to push the word pile and lang toggle to opposite ends.
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 2rem;
+  padding: 2rem;
+  perspective: 1200px;
+  border-bottom: 1px solid $border-color;
+  background-color: $background-color;
+  width: 100%;
+}
+
+.wordpile-container {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+.wordpile {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center; // Vertically align items in the middle.
+  gap: 0.75rem;
+  padding: 0; // Remove default list padding.
+  margin: 0; // Remove default list margin.
+  list-style-type: none; // Remove list bullets.
+}
+
+.word-clone--active {
+  // A subtle shadow to make the word "pop" off the page during animation
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.15));
+}
+
+.word-item {
+  display: inline-block;
+  margin-left: 1em;
+}
+
+.pinned-word {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-right: auto;
+}
+
+.word {
+  // Inherit base button styles from the Minimal Mistakes theme
+  @extend .btn;
+  @extend .btn--small;
+
+  // --- Custom styles for 3D language flip ---
+  position: relative;
+  transform-style: preserve-3d;
+  // Keep the transform separate so it doesn't get overridden by .btn transitions
+  transition: transform 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+  cursor: pointer;
+  width: max-content;
+  text-align: center;
+  perspective: 1000px;
+  // Override text decoration from default links
+  text-decoration: none !important;
+
+  .en,
+  .he {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden; // For Safari
+  }
+
+  .he {
+    transform: rotateX(180deg);
+  }
+}
+
+// When this class is on the body, all words flip
+body.show-hebrew .word {
+  transform: rotateX(180deg);
+}
+
+// Special styling for the main "place" word to make it stand out
+.label-place .word {
+  background-color: #333;
+  color: #fff;
+  border-color: #333;
+
+  &:hover {
+    background-color: #000;
+    border-color: #000;
+  }
+}
+
+// Styling for the language toggle button
+.lang-toggle-btn {
+  text-decoration: none !important;
+  .word {
+    background-color: #f0f0f0;
+  }
+}
+
+// --- RTL Support ---
+[dir="rtl"] {
+  .wordplay-header {
+    flex-direction: row-reverse;
+  }
+}

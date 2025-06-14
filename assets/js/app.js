@@ -16,14 +16,14 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialize fullWordList ONCE from the original DOM structure
     window.fullWordList = pileZone ? Array.from(pileZone.children).map(node => node.cloneNode(true)) : [];
 
-    function normalizePath(path) {
+   function normalizePath(path) {
         try {
             const url = new URL(path, window.location.origin);
-            return url.pathname.replace(/\/+$/, '') + '/';
-        } catch {
+            return url.pathname.replace(/\//+$/, '') + '/';
+        } catch (error) { // This is the corrected line for compatibility
             return '/';
         }
-    }
+    } 
 
     wordplayHeader.addEventListener('click', (e) => {
         if (window.__animationInProgress) {
@@ -116,36 +116,31 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         barba.hooks.afterEnter(({ next }) => {
-            console.log('[barba] afterEnter started for:', next.url.path); // <--- LOG ADDED
+            console.log('[barba] afterEnter started for:', next.url.path);
             const header = document.getElementById('wordplay-header');
+            const pileZone = header?.querySelector('.zone-pile');
+            const pinnedZone = header?.querySelector('.zone-pinned');
 
-            if (!header) {
-                console.error('[barba] CRITICAL: #wordplay-header not found in afterEnter. Cannot reveal.'); // <--- LOG ADDED
+            if (!pileZone || !pinnedZone) {
+                console.error('[barba] Missing .zone-pile or .zone-pinned in afterEnter. Cannot update header content.');
+                // Header should now be visible by default CSS, no need to force reveal
+                return;
             }
 
-            // Cleanup any clone artifacts or leftover animation states
+            // Cleanup any clone artifacts from previous word swap animation
             document.querySelectorAll('.word-clone').forEach(clone => clone.remove());
             document.querySelectorAll('.word-item').forEach(item => {
-                item.style.opacity = '1';
-                item.style.transform = '';
-                item.style.transition = '';
+                // Ensure all original word items are reset from any previous animation state
+                gsap.set(item, { opacity: 1, x: 0, y: 0, rotationX: 0, scale: 1, clearProps: "all" });
             });
             window.__animationInProgress = false;
 
             const currentPath = normalizePath(window.location.pathname);
             console.log('[barba] Current path normalized:', currentPath);
 
-            // Clear current zones to rebuild them from scratch
-            const pileZone = header?.querySelector('.zone-pile');
-            const pinnedZone = header?.querySelector('.zone-pinned');
-
-            if (pileZone && pinnedZone) {
-                pileZone.innerHTML = '';
-                pinnedZone.innerHTML = '';
-            } else {
-                console.error('[barba] pileZone or pinnedZone not found. Skipping header content update.'); // <--- LOG ADDED
-            }
-            
+            // Instant update of header content (no fade-out/in for words initially)
+            pileZone.innerHTML = '';
+            pinnedZone.innerHTML = '';
             let matchedItemForPinned = null;
 
             if (window.fullWordList.length > 0) {
@@ -153,9 +148,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const clone = originalNode.cloneNode(true);
                     const anchor = clone.querySelector('a');
                     if (!anchor) return;
-
                     const clonePath = normalizePath(new URL(anchor.href).pathname);
-
                     if (clonePath === currentPath) {
                         matchedItemForPinned = clone;
                     } else if (pileZone) {
@@ -163,43 +156,30 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 });
             } else {
-                console.warn('[barba] window.fullWordList is empty. Cannot populate header zones.'); // <--- LOG ADDED
+                console.warn('[barba] window.fullWordList is empty. Cannot populate header zones.');
             }
 
-
-            // Special handling for the root path '/' or if no direct match was found
             if (!matchedItemForPinned && window.fullWordList.length > 0) {
                 matchedItemForPinned = window.fullWordList[0].cloneNode(true);
                 const matchedAnchor = matchedItemForPinned.querySelector('a');
                 if (matchedAnchor && pileZone) {
-                     const existingPileItem = pileZone.querySelector(`a[href="${matchedAnchor.href}"]`)?.closest('.word-item');
-                     if(existingPileItem) {
-                         existingPileItem.remove();
-                     }
+                    const existingPileItem = pileZone.querySelector(`a[href="${matchedAnchor.href}"]`)?.closest('.word-item');
+                    if(existingPileItem) {
+                        existingPileItem.remove();
+                    }
                 }
                 console.log('[barba] Defaulting pinned word to:', matchedItemForPinned?.textContent?.trim());
             }
 
-
             if (matchedItemForPinned && pinnedZone) {
-                console.log('[barba] Moving word to pinned zone:', matchedItemForPinned);
                 matchedItemForPinned.classList.add('pinned-word');
                 pinnedZone.appendChild(matchedItemForPinned);
             } else if (!matchedItemForPinned) {
-                console.warn('[barba] No matching word found for current path, and fullWordList is empty. Pinned zone remains empty or could not be populated.'); // <--- CLARIFIED LOG
+                console.warn('[barba] No matching word found for current path, and fullWordList is empty. Pinned zone remains empty or could not be populated.');
             }
-            console.log('[barba] Updated fullWordList, new pile count:', pileZone ? pileZone.children.length : 'N/A'); // <--- ADDED TERNARY FOR SAFETY
+            console.log('[barba] Updated fullWordList, new pile count:', pileZone ? pileZone.children.length : 'N/A');
 
-            // Crucial change: Explicitly hide the header with GSAP set, then fade it in.
-            if (header) {
-                console.log('[barba] Attempting to reveal header with GSAP...'); // <--- LOG ADDED
-                gsap.set(header, { opacity: 0, visibility: 'hidden' }); // Ensure it's fully hidden before animating
-                gsap.to(header, { opacity: 1, visibility: 'visible', duration: 0.3, onComplete: () => {
-                    console.log('[barba] Header reveal animation complete.'); // <--- LOG ADDED
-                }});
-            } else {
-                console.warn('[barba] Header element not found, cannot reveal with GSAP.'); // <--- LOG ADDED
-            }
+            // Header and its contents should be visible instantly by default. No overall header fade or word fade here.
         });
 
         barba.hooks.after(() => {
@@ -290,34 +270,57 @@ window.animateWordSwapAnimation = function ({ selectedItem, pinnedItem, pileItem
             fill: 'forwards'
         };
 
-                const selectedAnimation = selectedClone.animate(selectedFrames, options);
-        pinnedClone.animate(pinnedFrames, options);
+        // Note: The previous version used selectedClone.animate.
+        // We will now use GSAP timeline consistently for all animations
+        const tl = gsap.timeline({
+            onComplete: () => {
+                // Cleanup clones and restore originals
+                selectedClone.remove();
+                pinnedClone.remove();
+                selectedItem.style.opacity = '1';
+                pinnedItem.style.opacity = '1';
 
-         let navigationTriggered = false; // Keep this variable as it prevents double navigation
-        function safeNavigate() {
-            if (navigationTriggered) {
-                console.warn('[app] safeNavigate() called, but navigation already triggered. Ignoring.'); // <--- ADD THIS LOG
-                return;
-            }
-            navigationTriggered = true;
-            try {
-                if (typeof barba !== 'undefined' && typeof barba.go === 'function') {
-                    console.log('[app] Attempting Barba.js navigation to:', href); // <--- MODIFIED LOG
-                    barba.go(href);
-                } else {
-                    console.error('[app] Barba.js is NOT available! Falling back to full page refresh for:', href); // <--- MODIFIED LOG
-                    window.location.href = href;
-                }
-            } catch (err) {
-                console.error('[app] Navigation error during Barba.go or fallback:', err); // <--- MODIFIED LOG
-            }
-        }
+                // Reset pile items
+                pileArray.forEach(el => {
+                    gsap.set(el, { clearProps: "transform,transition" });
+                });
 
-        selectedAnimation.onfinish = () => {
-            // ... (rest of your onfinish cleanup code) ...
-            console.log('[wordplay-animation] Animation complete'); // This log should trigger first now
-            window.__animationInProgress = false;
-            safeNavigate();
-        };
+                window.__animationInProgress = false;
+
+                // Trigger Barba.js navigation
+                safeNavigate();
+            }
+        });
+
+        // Animate the pile items (move them out of the way)
+        const initialShiftX = selectedBox.width + 8; // Assuming 8px gap between words
+        tl.to(pileArray, {
+            x: `-=${initialShiftX}`, // Move left by its width + gap
+            duration: 0.5,
+            ease: "power2.out",
+            stagger: 0.05
+        }, 0);
+
+        // Animate the selected word clone to the pinned position with a creative effect
+        tl.to(selectedClone, {
+            x: pinnedBox.left - selectedBox.left,
+            y: pinnedBox.top - selectedBox.top,
+            rotationX: 360, // Flip effect
+            scale: 1.1, // Slightly pop out
+            duration: 1,
+            ease: "power3.inOut"
+        }, 0);
+
+        // Animate the pinned word clone to the target pile position with a creative effect
+        tl.to(pinnedClone, {
+            x: selectedBox.left - pinnedBox.left, // Moves to where selected item was
+            y: selectedBox.top - pinnedBox.top,
+            rotationX: -360, // Flip effect in opposite direction
+            scale: 0.9, // Shrink slightly
+            opacity: 0, // Fade out as it moves to the pile
+            duration: 1,
+            ease: "power3.inOut"
+        }, 0);
+
     });
 };

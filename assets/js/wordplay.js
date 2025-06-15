@@ -1,260 +1,68 @@
-// import "./barba-config";
+import gsap from "https://cdn.skypack.dev/gsap@3.12.5";
+import { Flip } from "https://cdn.skypack.dev/gsap@3.12.5/Flip";
+import barba from "https://cdn.skypack.dev/@barba/core@2.10.3";
 
+gsap.registerPlugin(Flip);
 
+document.addEventListener("DOMContentLoaded", () => {
+  const HEADER_ANIM_DURATION = 1.5;
+  const FADE_DURATION = HEADER_ANIM_DURATION / 2;
 
-function animateWordSwapAnimation({ selectedItem, pinnedItem, pileItems, pileZone, pinnedZone }, onComplete) {
-    console.log('[wordplay-animation] Starting chained FLIP animation');
-
-    const animationLayer = document.createElement('div');
-    animationLayer.id = 'animation-layer';
-    Object.assign(animationLayer.style, {
-        position: 'fixed',
-        top: '0',
-        left: '0',
-        width: '100%',
-        height: '100%',
-        pointerEvents: 'none',
-        zIndex: '9999',
+  // Header zones and item clones for FLIP transitions
+  const header = document.getElementById("wordplay-header");
+  const pileZone = header.querySelector(".zone-pile");
+  const pinnedZone = header.querySelector(".zone-pinned");
+  // Clone initial items for reuse
+  const initialItems = [
+    ...Array.from(pileZone.children),
+    ...Array.from(pinnedZone.children)
+  ];
+  const fullWordList = initialItems.map(el => el.cloneNode(true));
+  
+  // Update header zones based on namespace/slug
+  function updateWordplayZones(slug) {
+    pinnedZone.innerHTML = "";
+    pileZone.innerHTML = "";
+    let matched = false;
+    fullWordList.forEach(clone => {
+      const cloneSlug = clone.querySelector("a").dataset.id;
+      if (cloneSlug === slug) {
+        clone.classList.add("pinned-word");
+        pinnedZone.appendChild(clone);
+        matched = true;
+      } else {
+        clone.classList.remove("pinned-word");
+        pileZone.appendChild(clone);
+      }
     });
-    document.body.appendChild(animationLayer);
-
-    const selectedBox = selectedItem.getBoundingClientRect();
-    const pinnedBox = pinnedItem?.getBoundingClientRect();
-
-    const selectedClone = selectedItem.cloneNode(true);
-    const pinnedClone = pinnedItem ? pinnedItem.cloneNode(true) : null;
-
-    if (!selectedBox || (pinnedItem && !pinnedBox) || !selectedClone) {
-        console.warn('[wordplay-animation] Missing bounding boxes or clones');
-        animationLayer.remove();
-        if (typeof onComplete === 'function') onComplete();
-        return;
+    if (!matched) {
+      console.warn("[wordplay] No matching header item for namespace:", slug);
     }
+  }
 
-    // Setup clones styling
-    Object.assign(selectedClone.style, {
-        position: 'absolute',
-        left: `${selectedBox.left}px`,
-        top: `${selectedBox.top}px`,
-        width: `${selectedBox.width}px`,
-        height: `${selectedBox.height}px`,
-        margin: '0',
-        zIndex: '1000',
-        pointerEvents: 'none',
-        transition: 'transform 300ms cubic-bezier(0.55, 0.055, 0.675, 0.19)', // easeIn for down
-    });
-    animationLayer.appendChild(selectedClone);
+  barba.init({
+    transitions: [{
+      name: 'opacity-transition',
+      from: { namespace: ["place", "place-of", "place-with", "placeless", "place-time"] },
+      to:   { namespace: ["place", "place-of", "place-with", "placeless", "place-time"] },
+      leave({ current }) {
+        // fade out old container
+        return gsap.to(current.container, { opacity: 0, duration: FADE_DURATION });
+      },
+      beforeEnter({ next }) {
+        // hide the new container before fading in
+        gsap.set(next.container, { opacity: 0 });
+      },
+      enter({ next }) {
+        // fade in the new container
+        return gsap.to(next.container, { opacity: 1, duration: FADE_DURATION });
+      }
+    }]
+  });
 
-    if (pinnedClone) {
-        Object.assign(pinnedClone.style, {
-            position: 'absolute',
-            left: `${pinnedBox.left}px`,
-            top: `${pinnedBox.top}px`,
-            width: `${pinnedBox.width}px`,
-            height: `${pinnedBox.height}px`,
-            margin: '0',
-            zIndex: '999',
-            pointerEvents: 'none',
-            transition: 'transform 300ms cubic-bezier(0.215, 0.61, 0.355, 1)', // easeOut for down
-        });
-        animationLayer.appendChild(pinnedClone);
-    }
-
-    // Pile clones setup
-    const pileArray = Array.from(pileItems).filter(el => el !== selectedItem);
-    const pileBoxes = pileArray.map(el => el.getBoundingClientRect());
-
-    const pileClones = pileArray.map((el, i) => {
-        const box = pileBoxes[i];
-        const clone = el.cloneNode(true);
-        Object.assign(clone.style, {
-            position: 'absolute',
-            left: `${box.left}px`,
-            top: `${box.top}px`,
-            width: `${box.width}px`,
-            height: `${box.height}px`,
-            margin: '0',
-            zIndex: '998',
-            pointerEvents: 'none',
-            transition: 'transform 400ms cubic-bezier(0.4, 0, 0.2, 1)', // easeInOut for pile move
-            transform: 'translateX(0)',
-        });
-        animationLayer.appendChild(clone);
-        return clone;
-    });
-
-    // Hide original elements
-    selectedItem.style.visibility = 'hidden';
-    if (pinnedItem) pinnedItem.style.visibility = 'hidden';
-    pileArray.forEach(el => (el.style.visibility = 'hidden'));
-
-    // Helper for chained transitions using promises
-    const waitTransitionEnd = (element) => {
-        return new Promise(resolve => {
-            const onEnd = (e) => {
-                if (e.target === element && e.propertyName === 'transform') {
-                    element.removeEventListener('transitionend', onEnd);
-                    resolve();
-                }
-            };
-            element.addEventListener('transitionend', onEnd);
-        });
-    };
-
-    // Start animation chain
-    (async () => {
-        // Step 1: Selected word moves DOWN (easeIn)
-        selectedClone.style.transform = 'translateY(20px)';
-        await waitTransitionEnd(selectedClone);
-
-        // Step 2: Selected word moves LEFT to pinned x (easeOut)
-        selectedClone.style.transition = 'transform 400ms cubic-bezier(0.215, 0.61, 0.355, 1)'; // easeOut
-        const dxSelected = pinnedBox.left - selectedBox.left;
-        selectedClone.style.transform = `translate(${dxSelected}px, 20px)`;
-
-        // At the same time start pinned word moving DOWN (easeOut)
-        if (pinnedClone) {
-            pinnedClone.style.transform = 'translateY(30px)';
-        }
-
-        // After small delay start pile words moving RIGHT (easeInOut)
-        setTimeout(() => {
-            pileClones.forEach(clone => {
-                clone.style.transform = `translateX(${selectedBox.width}px)`;
-            });
-        }, 100); // 100ms head start after selected moves left
-
-        await waitTransitionEnd(selectedClone);
-
-        // Step 3: Selected word moves UP to pinned y (easeOut)
-        selectedClone.style.transition = 'transform 300ms cubic-bezier(0.215, 0.61, 0.355, 1)';
-        selectedClone.style.transform = `translate(${dxSelected}px, 0)`;
-        // Pinned word moves RIGHT to empty spot x (easeOut)
-        let dxPinned;
-        if (pinnedClone) {
-            dxPinned = selectedBox.left - pinnedBox.left;
-            pinnedClone.style.transition = 'transform 400ms cubic-bezier(0.215, 0.61, 0.355, 1)';
-            pinnedClone.style.transform = `translate(${dxPinned}px, 30px)`;
-        }
-        await waitTransitionEnd(selectedClone);
-
-        // Step 4: Pinned word moves UP to pile y (easeInOut)
-        if (pinnedClone) {
-            pinnedClone.style.transition = 'transform 400ms cubic-bezier(0.4, 0, 0.2, 1)';
-            pinnedClone.style.transform = `translate(${dxPinned}px, 0)`;
-            await waitTransitionEnd(pinnedClone);
-        }
-
-        // Cleanup
-        animationLayer.remove();
-        selectedItem.style.visibility = '';
-        if (pinnedItem) pinnedItem.style.visibility = '';
-        pileArray.forEach(el => (el.style.visibility = ''));
-
-        console.log('[wordplay-animation] Chained animation complete');
-        if (typeof onComplete === 'function') onComplete();
-    })();
-}
-
-function updateWordplayZones(path) {
-    const wordplayHeader = document.getElementById('wordplay-header');
-    const pileZone = wordplayHeader?.querySelector('.zone-pile');
-    const pinnedZone = wordplayHeader?.querySelector('.zone-pinned');
-
-    if (!pileZone || !pinnedZone || !window.fullWordList) return;
-
-    requestAnimationFrame(() => {
-        // Clear zones
-        pileZone.innerHTML = '';
-        pinnedZone.innerHTML = '';
-
-        let matched = false;
-
-        window.fullWordList.forEach(clone => {
-            const clonePath = new URL(clone.querySelector('a').href).pathname.replace(/^\/|\/$/g, '');
-            if (clonePath === path) {
-                clone.classList.add('pinned-word');
-                pinnedZone.appendChild(clone);
-                matched = true;
-                console.log('[barba] Matched pinned word: –', clonePath);
-            } else {
-                pileZone.appendChild(clone);
-            }
-        });
-
-        if (!matched) {
-            console.warn('[barba] No matching pile word for current page: –', path);
-        }
-
-        const main = document.querySelector('main');
-        if (main) {
-            main.style.opacity = '1';
-        }
-    });
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-    console.log('[wordplay] DOMContentLoaded fired');
-
-    const wordplayHeader = document.getElementById('wordplay-header');
-    if (!wordplayHeader) return console.error('[wordplay] No #wordplay-header found');
-
-    const pileZone = wordplayHeader.querySelector('.zone-pile');
-    const pinnedZone = wordplayHeader.querySelector('.zone-pinned');
-    if (!pileZone || !pinnedZone) return console.error('[wordplay] Missing zones');
-
-    // Store full list for state restoration
-    window.fullWordList = Array.from(pileZone.children).map(el => el.cloneNode(true));
-
-    // Click handler for word pile
-    pileZone.addEventListener('click', e => {
-        const selectedItem = e.target.closest('.word-item');
-        if (!selectedItem) return;
-        e.preventDefault();
-        const link = selectedItem.querySelector('a');
-        // Use relative href so Barba intercepts navigation
-        const href = link.getAttribute('href');
-        const pinnedItem = pinnedZone.querySelector('.word-item');
-        const pileItems = pileZone.querySelectorAll('.word-item');
-        window.wordplayTransition = { selectedItem, pinnedItem, pileItems, pileZone, pinnedZone, href };
-        console.log('TRANSITION CONTEXT →', window.wordplayTransition);
-        // barba.go(href);
-        console.log('[app] Word pile clicked: –', href);
-    });
-
-    barba.hooks.afterEnter(() => {
-        console.log('[barba] afterEnter: –', window.location.pathname);
-
-        const path = window.location.pathname.replace(/^\/|\/$/g, '');
-        updateWordplayZones(path);
-    });
-    
-    barba.init({
-      sync: false,
-      transitions: [
-        {
-          name: 'wordplay-transition',
-          async once({ next }) {
-            // initial load: set header state
-            const path = window.location.pathname.replace(/^\/|\/$/g, '');
-            updateWordplayZones(path);
-          },
-          async leave({ current }) {
-            console.log('[barba] 🚪 leave hook for', window.wordplayTransition.href);
-            // fade out current content
-            await gsap.to(current.container, { opacity: 0, duration: 0.3 });
-            // start header FLIP animation without blocking
-            animateWordSwapAnimation(window.wordplayTransition);
-          },
-          async enter({ next }) {
-            console.log('[barba] 🚪 enter hook');
-            // update header for new page
-            const path = window.location.pathname.replace(/^\/|\/$/g, '');
-            updateWordplayZones(path);
-            // fade in new content
-            await gsap.from(next.container, { opacity: 0, duration: 0.3 });
-          },
-        },
-      ],
-    });
+  // After each page enter, update header based on namespace
+  barba.hooks.afterEnter(({ next }) => {
+    const slug = Array.isArray(next.namespace) ? next.namespace[0] : next.namespace;
+    updateWordplayZones(slug);
+  });
 });

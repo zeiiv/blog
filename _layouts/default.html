@@ -6,28 +6,31 @@
 <html lang="{{ site.locale | replace: " _", "-" | default: "en" }}" class="no-js">
 
 <head>
+</head>
   {% include head.html %}
   {% include head/custom.html %}
 </head>
 
-<body class="layout--{{ page.layout | default: layout.layout }} skin--{{ site.minimal_mistakes_skin | default: 'default' }} lang--{{ page.lang | default: site.lang }}{% if page.classes or layout.classes %}{{ page.classes | default: layout.classes | join: ' ' | prepend: ' ' }}{% endif %}" dir="{% if page.rtl %}rtl{% else %}ltr{% endif %}">
+<body data-barba="wrapper"
+  class="layout--{{ page.layout | default: layout.layout }} skin--{{ site.minimal_mistakes_skin | default: 'default' }} lang--{{ page.lang | default: site.lang }}{% if page.classes or layout.classes %}{{ page.classes | default: layout.classes | join: ' ' | prepend: ' ' }}{% endif %}"
+  dir="{% if page.rtl %}rtl{% else %}ltr{% endif %}">
 
-{% include_cached skip-links.html %}
-{% include header__wordplay.html %}
-<div data-barba="wrapper">
+  {% include_cached skip-links.html %}
+  {% include header__wordplay.html %}
+
   <main data-barba="container"
-        data-barba-namespace="{% if page.url == '/' %}place{% else %}{{ page.title | slugify }}{% endif %}">
+    data-barba-namespace="{% if page.url == '/' %}place{% else %}{{ page.url | slugify }}{% endif %}">
     {{ content }}
     {% include after-content.html %}
   </main>
-</div>
 
-<div id="footer" class="page__footer">
-  <footer>
-    {% include footer/custom.html %}
-    {% include_cached footer.html %}
-  </footer>
-</div>
-    <script type="module" src="{{ '/assets/js/wordplay.js' | relative_url }}"></script>
+  <div id="footer" class="page__footer">
+    <footer>
+      {% include footer/custom.html %}
+      {% include_cached footer.html %}
+    </footer>
+  </div>
+  <script type="module" src="{{ '/assets/js/wordplay.js' | relative_url }}"></script>
 </body>
+
 </html>

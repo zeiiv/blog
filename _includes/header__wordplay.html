@@ -8,45 +8,49 @@
     <!-- Zone 1: The static "place" word -->
     <div class="wordplay-zone zone-place">
       <div class="word-item static-word">
-        <a href="{{ '/' | relative_url }}" class="label-place">
-          <div class="word" data-id="place">
-            <span class="en">{{ site.data.config-text['en'].title }}</span>
-            <span class="he">{{ site.data.config-text['he'].title }}</span>
-          </div>
+        <a href="{{ '/' | relative_url }}" class="word" data-id="place">
+            <span class="en">place</span>
+            <span class="he">מקום</span>
         </a>
       </div>
     </div>
 
     <!-- Zone 2: The Pinned Word. This will be empty on pages without a matching title. -->
     <div class="wordplay-zone zone-pinned">
-      {%- assign current_page_slug = page.title | slugify -%}
-      {% for item in nav_links_en %}
-        {%- assign item_slug = item.title | slugify -%}
-        {% if item_slug == current_page_slug %}
-          <div class="word-item pinned-word">
-            <a href="{{ item.url | relative_url }}" class="word" data-id="{{ item_slug }}">
-              <span class="en">{{ item.title }}</span>
-              <span class="he">{{ nav_links_he[forloop.index0].title }}</span>
-            </a>
-          </div>
-        {% endif %}
-      {% endfor %}
     </div>
 
     <!-- Zone 3: The Pile of other words -->
     <div class="wordplay-zone zone-pile">
-      {% for item in nav_links_en %}
-        {%- assign item_slug = item.title | slugify -%}
-        {% unless item_slug == current_page_slug %}
-          <div class="word-item">
-            <a href="{{ item.url | relative_url }}" class="word" data-id="{{ item_slug }}">
-              <span class="en">{{ item.title }}</span>
-              <span class="he">{{ nav_links_he[forloop.index0].title }}</span>
-            </a>
-          </div>
-        {% endunless %}
-      {% endfor %}
+      <div class="word-item">
+        <a href="/of/" class="word" data-id="of">
+          <span class="en">of</span>
+          <span class="he">של</span>
+        </a>
+      </div>
+      <div class="word-item">
+        <a href="/with/" class="word" data-id="with">
+          <span class="en">with</span>
+          <span class="he">עם</span>
+        </a>
+      </div>
+      <div class="word-item">
+        <a href="/less/" class="word" data-id="less">
+          <span class="en">less</span>
+          <span class="he">חסר</span>
+        </a>
+      </div>
+      <div class="word-item">
+        <a href="/time/" class="word" data-id="time">
+          <span class="en">time</span>
+          <span class="he">שעה</span>
+        </a>
+      </div>
+      <div class="word-item">
+        <a href="/ment/" class="word" data-id="ment">
+          <span class="en">ment</span>
+          <span class="he">אחר</span>
+        </a>
+      </div>
     </div>
-
   </div>
 </header>

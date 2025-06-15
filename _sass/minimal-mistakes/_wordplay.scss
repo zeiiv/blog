@@ -25,30 +25,46 @@
 .zone-pinned {
   margin-right: auto; /* Pushes the pile to the right */
 }
-.zone-pile {
+.zone-pile { 
   justify-content: flex-end;
 }
 
 // --- Word Item Styling ---
 .word-item {
+  transition: none !important;
   position: relative;
-  transform-style: preserve-3d;
   cursor: pointer;
 
   .word {
     @extend .btn;
     @extend .btn--small;
     @extend .btn--primary;
-    transition: transform 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55);
 
-    .en,
+    // Remove or hide the .he span element if it exists
     .he {
-      backface-visibility: hidden;
-      -webkit-backface-visibility: hidden;
+      display: none !important;
     }
 
-    .he {
-      transform: rotateX(180deg);
-    }
   }
 }
+
+
+/* Ensure containers overlap during transition */
+[data-barba="wrapper"] {
+  position: relative;
+}
+[data-barba="container"] {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+}
+
+/* Fade classes applied by Barba */
+.css-fade-leave-active,
+.css-fade-enter-active {
+  transition: opacity 0.5s ease;
+}
+.css-fade-leave-to { opacity: 0; }
+.css-fade-enter { opacity: 0; }
+.css-fade-enter-to { opacity: 1; }

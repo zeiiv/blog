@@ -22,7 +22,7 @@
     data-barba-namespace="{% if page.url == '/' %}place{% else %}{{ page.url | slugify }}{% endif %}">
     {{ content }}
     {% include after-content.html %}
-    <div id="footer" class="page__footer">
+      <div id="footer" class="page__footer">
     <footer>
       {% include footer/custom.html %}
       {% include_cached footer.html %}
@@ -30,7 +30,7 @@
   </div>
   </main>
 
-  
+
   <script type="module" src="{{ '/assets/js/wordplay.js' | relative_url }}"></script>
 </body>
 

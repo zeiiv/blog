@@ -25,13 +25,12 @@
 .zone-pinned {
   margin-right: auto; /* Pushes the pile to the right */
 }
-.zone-pile { 
+.zone-pile {
   justify-content: flex-end;
 }
 
 // --- Word Item Styling ---
 .word-item {
-  transition: none !important;
   position: relative;
   cursor: pointer;
 
@@ -48,23 +47,21 @@
   }
 }
 
-
-/* Ensure containers overlap during transition */
 [data-barba="wrapper"] {
   position: relative;
-}
-[data-barba="container"] {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
+  min-height: 100vh;
+  height: auto;
 }
 
-/* Fade classes applied by Barba */
-.css-fade-leave-active,
-.css-fade-enter-active {
-  transition: opacity 0.5s ease;
+/* Overlay container during transitions without affecting wrapper/flow */
+.is-transitioning [data-barba="container"] {
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: 10 !important;
 }
-.css-fade-leave-to { opacity: 0; }
-.css-fade-enter { opacity: 0; }
-.css-fade-enter-to { opacity: 1; }
+
+/* Keep footer underneath containers */
+footer {
+  position: relative;
+  z-index: 1;
+}

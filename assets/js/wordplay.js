@@ -5,7 +5,7 @@ import barba from "https://cdn.skypack.dev/@barba/core@2.10.3";
 gsap.registerPlugin(Flip);
 
 document.addEventListener("DOMContentLoaded", () => {
-  const HEADER_ANIM_DURATION = 1.5;
+  const HEADER_ANIM_DURATION = 0.7;
   const FADE_DURATION = HEADER_ANIM_DURATION / 2;
 
   // Prevent multiple transitions from overlapping

@@ -5,11 +5,11 @@ import barba from "https://cdn.skypack.dev/@barba/core@2.10.3";
 gsap.registerPlugin(Flip);
 
 document.addEventListener("DOMContentLoaded", () => {
-  const HEADER_ANIM_DURATION = 0.7;
-  const FADE_DURATION = HEADER_ANIM_DURATION / 2;
-
   // Prevent multiple transitions from overlapping
   let isTransitioning = false;
+
+  const HEADER_ANIM_DURATION = 1;
+  const FADE_DURATION = 0.5;
 
   // Header zones and item clones for FLIP transitions
   const header = document.getElementById("wordplay-header");
@@ -28,11 +28,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const link = e.target.closest('a[data-id]');
     if (!link) return;
     e.preventDefault();
-    isTransitioning = true;
     e.stopImmediatePropagation();
     const href = link.getAttribute('href');
     barba.go(href);
-    // Disable further clicks until transition ends
+    isTransitioning = true;
     pileZone.style.pointerEvents = 'none';
   });
 
@@ -56,9 +55,15 @@ document.addEventListener("DOMContentLoaded", () => {
       name: 'wordplay-fade',
       sync: false,
       leave({ current }) {
+        // Preserve wrapper height to prevent footer jump
+        const wrapper = document.querySelector('[data-barba="wrapper"]');
+        wrapper.style.minHeight = `${current.container.offsetHeight}px`;
         // Add transition class to body to overlay containers
         document.body.classList.add('is-transitioning');
-        return gsap.to(current.container, { autoAlpha: 0, duration: FADE_DURATION });
+        return gsap.to(current.container, { autoAlpha: 0, duration: FADE_DURATION, onComplete: () => {
+          // Clear the wrapper min-height after clone is removed
+          wrapper.style.minHeight = '';
+        }});
       },
       beforeEnter({ next }) {
         gsap.set(next.container, { autoAlpha: 0, visibility: 'visible' });
@@ -72,7 +77,9 @@ document.addEventListener("DOMContentLoaded", () => {
           .then(() => {
             // Remove transition class to restore normal flow
             document.body.classList.remove('is-transitioning');
+            // Re-enable navigation guard
             isTransitioning = false;
+            pileZone.style.pointerEvents = '';
           });
       },
     }]

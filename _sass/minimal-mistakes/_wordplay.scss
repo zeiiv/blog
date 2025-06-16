@@ -47,21 +47,22 @@
   }
 }
 
+/* Ensure containers overlap during transition */
 [data-barba="wrapper"] {
   position: relative;
-  min-height: 100vh;
-  height: auto;
+}
+[data-barba="container"] {
+  position: absolute;
+  top: 78px;
+  left: 0;
+  width: 100%;
 }
 
-/* Overlay container during transitions without affecting wrapper/flow */
-.is-transitioning [data-barba="container"] {
-  position: absolute !important;
-  inset: 0 !important;
-  z-index: 10 !important;
+/* Fade classes applied by Barba */
+.css-fade-leave-active,
+.css-fade-enter-active {
+  transition: opacity 0.5s ease;
 }
-
-/* Keep footer underneath containers */
-footer {
-  position: relative;
-  z-index: 1;
-}
+.css-fade-leave-to { opacity: 0; }
+.css-fade-enter { opacity: 0; }
+.css-fade-enter-to { opacity: 1; }

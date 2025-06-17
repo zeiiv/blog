@@ -66,3 +66,15 @@
 .css-fade-leave-to { opacity: 0; }
 .css-fade-enter { opacity: 0; }
 .css-fade-enter-to { opacity: 1; }
+
+/* Hide header zones by default to prevent initial flicker */
+.wordplay-header .zone-pile,
+.wordplay-header .zone-pinned {
+  visibility: hidden;
+}
+
+/* Reveal header zones once JS has initialized */
+.wordplay-header.is-ready .zone-pile,
+.wordplay-header.is-ready .zone-pinned {
+  visibility: visible;
+}

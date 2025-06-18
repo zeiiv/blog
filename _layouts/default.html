@@ -7,8 +7,8 @@
 
 <head>
 </head>
-  {% include head.html %}
-  {% include head/custom.html %}
+{% include head.html %}
+{% include head/custom.html %}
 </head>
 
 <body data-barba="wrapper"
@@ -22,12 +22,12 @@
     data-barba-namespace="{% if page.url == '/' %}place{% else %}{{ page.url | slugify }}{% endif %}">
     {{ content }}
     {% include after-content.html %}
-      <div id="footer" class="page__footer">
-    <footer>
-      {% include footer/custom.html %}
-      {% include_cached footer.html %}
-    </footer>
-  </div>
+    <div id="footer" class="page__footer">
+      <footer>
+        {% include footer/custom.html %}
+        {% include_cached footer.html %}
+      </footer>
+    </div>
   </main>
 
 

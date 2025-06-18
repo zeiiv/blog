@@ -1,56 +1,47 @@
 {%- assign lang = page.lang | default: 'en' -%}
-{%- assign nav_links_en = site.data.navigation.main.en -%}
-{%- assign nav_links_he = site.data.navigation.main.he -%}
+{% assign current_slug = page.slug %}
+{% assign slugs = site.data.wordplay %}
 
 <header class="wordplay-header" id="wordplay-header">
   <div class="wordplay-menu">
-    
     <!-- Zone 1: The static "place" word -->
     <div class="wordplay-zone zone-place">
       <div class="word-item static-word">
         <a href="{{ '/' | relative_url }}" class="word" data-id="place">
-            <span class="en">place</span>
-            <span class="he">מקום</span>
+          <span class="en">place</span>
+          <span class="he">מקום</span>
         </a>
       </div>
     </div>
 
-    <!-- Zone 2: The Pinned Word. This will be empty on pages without a matching title. -->
+    <!-- Zone 2: The Pinned Word -->
     <div class="wordplay-zone zone-pinned">
+      {% for item in slugs %}
+        {% if item.slug == current_slug %}
+          {% assign url = "/" | append: item.slug | append: "/" %}
+          <div class="word-item">
+            <a href="{{ url | relative_url }}" class="word" data-id="{{ item.slug }}">
+              <span class="en">{{ item.en }}</span>
+              <span class="he">{{ item.he }}</span>
+            </a>
+          </div>
+        {% endif %}
+      {% endfor %}
     </div>
 
-    <!-- Zone 3: The Pile of other words -->
+    <!-- Zone 3: The Pile of Other Words -->
     <div class="wordplay-zone zone-pile">
-      <div class="word-item">
-        <a href="/of/" class="word" data-id="of">
-          <span class="en">of</span>
-          <span class="he">של</span>
-        </a>
-      </div>
-      <div class="word-item">
-        <a href="/with/" class="word" data-id="with">
-          <span class="en">with</span>
-          <span class="he">עם</span>
-        </a>
-      </div>
-      <div class="word-item">
-        <a href="/less/" class="word" data-id="less">
-          <span class="en">less</span>
-          <span class="he">חסר</span>
-        </a>
-      </div>
-      <div class="word-item">
-        <a href="/time/" class="word" data-id="time">
-          <span class="en">time</span>
-          <span class="he">שעה</span>
-        </a>
-      </div>
-      <div class="word-item">
-        <a href="/ment/" class="word" data-id="ment">
-          <span class="en">ment</span>
-          <span class="he">אחר</span>
-        </a>
-      </div>
+      {% for item in slugs %}
+        {% if item.slug != current_slug and item.slug != "" %}
+          {% assign url = "/" | append: item.slug | append: "/" %}
+          <div class="word-item">
+            <a href="{{ url | relative_url }}" class="word" data-id="{{ item.slug }}">
+              <span class="en">{{ item.en }}</span>
+              <span class="he">{{ item.he }}</span>
+            </a>
+          </div>
+        {% endif %}
+      {% endfor %}
     </div>
   </div>
 </header>

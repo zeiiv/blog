@@ -1,154 +1,140 @@
-// Import GSAP core for animations
-import gsap from "https://cdn.skypack.dev/gsap@3.12.5";
-// Import GSAP Flip plugin for FLIP animations
-import { Flip } from "https://cdn.skypack.dev/gsap@3.12.5/Flip";
-// Import Barba.js for page transitions
-import barba from "https://cdn.skypack.dev/@barba/core@2.10.3";
+import gsap from "https://cdn.skypack.dev/gsap@3.12.5"; // GSAP core
+import { Flip } from "https://cdn.skypack.dev/gsap@3.12.5/Flip"; // GSAP FLIP plugin
+import barba from "https://cdn.skypack.dev/@barba/core@2.10.3"; // Barba.js page transitions
+gsap.registerPlugin(Flip); // register FLIP
 
-// Register the Flip plugin with GSAP
-gsap.registerPlugin(Flip);
-
-// Wait for the DOM to be fully loaded before initializing
 document.addEventListener("DOMContentLoaded", () => {
+  let prevPinnedSlug = null;                             // previously pinned slug
+  const HEADER_ANIM_DURATION = 1;                        // header FLIP duration (s)
+  const FADE_DURATION = HEADER_ANIM_DURATION / 2;        // content fade duration (s)
 
-  // Track the slug of the previously pinned word
-  let prevPinnedSlug = null;
-  // Duration for header Flip animation (in seconds)
-  const HEADER_ANIM_DURATION = 1;
-  // Duration for content fade animations
-  const FADE_DURATION = 0.5;
-  // Cache header element and its wordplay zones
-  const header = document.getElementById("wordplay-header");
-  const pileZone = header.querySelector(".zone-pile");
-  const pinnedZone = header.querySelector(".zone-pinned");
-  // Mark header ready to show zones (hides initial flicker)
-  header.classList.add('is-ready');
-  // Cache the Barba wrapper to avoid repeated queries
-  const wrapper = document.querySelector('[data-barba="wrapper"]');
-  //
-  const mainContainer = document.querySelector('[data-barba="container"]');
-  const initialSlug = mainContainer.getAttribute('data-barba-namespace');
-  // Cache body for transition callbacks
-  const body = document.body;
-  // 
-  const WORD_LINK_SELECTOR = 'a[data-id]';
+  const header = document.getElementById("wordplay-header");      // header element
+  const pileZone = header.querySelector(".zone-pile");            // pile container
+  const pinnedZone = header.querySelector(".zone-pinned");        // pinned container
+  header.classList.add("is-ready");                               // reveal header zones
 
-  // Helper to get the slug of the currently pinned word-item
+  const wrapper = document.querySelector('[data-barba="wrapper"]'); // Barba wrapper
+  const body = document.body;                                       // document body
+  const WORD_LINK_SELECTOR = 'a[data-id]';                          // selector for word links
+
+  // return the slug (data-id) of a .word-item or null
   function getSlugFromItem(itemEl) {
-    // Given a `.word-item` container (or null), find its <a> and return the data-id
     if (!itemEl) return null;
-    const link = itemEl.querySelector(WORD_LINK_SELECTOR);
-    return link?.dataset.id || null;
+    const link = itemEl.querySelector(WORD_LINK_SELECTOR); // find the <a>
+    return link?.dataset.id || null;                       // return slug
   }
+
+  // return the currently pinned slug
   function getPinnedSlug() {
-    const pinnedItem = pinnedZone.querySelector('.word-item');
-    return getSlugFromItem(pinnedItem) || null;
+    const pinnedItem = pinnedZone.querySelector(".word-item"); 
+    return getSlugFromItem(pinnedItem);
   }
 
-  // Click handler for SPA navigation
+  // click handler for SPA navigation
   function onPileClick(e) {
-    const link = e.target.closest('a[data-id]');
+    const link = e.target.closest(WORD_LINK_SELECTOR);
     if (!link) return;
-    e.preventDefault();
+    e.preventDefault();                // stop full reload
     e.stopImmediatePropagation();
-    prevPinnedSlug = getPinnedSlug();
-    barba.go(link.getAttribute('href'));
-    // Temporarily disable listener to prevent overlaps
-    pileZone.removeEventListener('click', onPileClick);
-    // Also disable pointer events to block clicks during transition
-    pileZone.style.pointerEvents = 'none';
-    body.classList.add('is-transitioning');
+
+    const slug = link.dataset.id;
+    if (slug === getPinnedSlug()) return;  // no-op if same
+   // prevPinnedSlug = getPinnedSlug();      
+    barba.go(link.href);                   // start transition
   }
+  
+  // Prevent reload/flicker when clicking the already-pinned word
+  function onPinnedClick(e) {
+    const link = e.target.closest("a[data-id]");
+    if (!link) return;
+    e.preventDefault(); // stops the browser from reloading
+  }
+  
+  function onPlaceClick(e) {
+    
+  }
+  // reset click guard and cleanup
   function resetTransitionGuard() {
-    body.classList.remove('is-transitioning');
-    // Re-enable pointer events for navigation
-    pileZone.style.pointerEvents = '';
-    // Re-attach handler only if it’s gone
-    if (!pileZone.onclick) pileZone.addEventListener('click', onPileClick);
+    body.classList.remove("is-transitioning"); // clear flag
+    pileZone.style.pointerEvents = "";         // re-enable clicks
+    pileZone.addEventListener("click", onPileClick); // reattach handler
   }
-  // Clone initial header items so we can rebuild zones on navigation
-  const fullWordList = Array.from(pileZone.children).concat(
-    Array.from(pinnedZone.children)
-  ).map(el => {
-    const link = el.querySelector(WORD_LINK_SELECTOR);
-    const id = link.dataset.id;
-    return { id, template: el.cloneNode(true) };
-  });
 
-  // Attach named handler
-  pileZone.addEventListener('click', onPileClick);
-  // On initial load, set header zones according to current page namespace
+  // build list of {id, template} once
+  const fullWordList = Array.from(pileZone.children)
+    .concat(Array.from(pinnedZone.children))
+    .map(el => {
+      const link = el.querySelector(WORD_LINK_SELECTOR);
+      return { id: link.dataset.id, template: el.cloneNode(true) };
+    });
+
+  pileZone.addEventListener("click", onPileClick); // attach click handler
+  pinnedZone.addEventListener("click", onPinnedClick);
+  
+
+  // set initial header based on page
+  const mainContainer = document.querySelector('[data-barba="container"]');
+  const initialSlug = mainContainer.getAttribute("data-barba-namespace");
   updateWordplayZones(initialSlug);
-  // Rebuild the header zones based on the current page slug
-  function updateWordplayZones(slug) {
-    // Use the main list directly since we do not need to preserve original order
-    const workingList = fullWordList;
 
-    // If there was a previous pin, move it to front:
-    if (prevPinnedSlug && prevPinnedSlug !== slug) {
-      // Find the original index of the previous pin
-      const idx = fullWordList.findIndex(item => item.id === prevPinnedSlug);
-      if (idx > -1) {
-        // Splice out that element and unshift it:
-        const [prevClone] = workingList.splice(idx, 1);
-        workingList.unshift(prevClone);
-      }
+  // rebuild header zones based on slug
+  function updateWordplayZones(slug) { // rebuild header zones
+    const workingList = fullWordList.slice(); // copy list so splice/unshift won't mutate original
+
+    // move previous pinned item to front when returning home or changing pages
+    if (prevPinnedSlug) {
+      const idx = workingList.findIndex(item => item.id === prevPinnedSlug);
+      if (idx > -1) workingList.unshift(workingList.splice(idx, 1)[0]);
     }
-    const pileFrag   = document.createDocumentFragment();
+
+    // normal and home-case rendering: split pinned vs. pile
     const pinnedFrag = document.createDocumentFragment();
-    // Then rebuild pinned vs. pile as before...
+    const pileFrag   = document.createDocumentFragment();
+
     workingList.forEach(({ id, template }) => {
       const clone = template.cloneNode(true);
       if (id === slug) pinnedFrag.appendChild(clone);
       else pileFrag.appendChild(clone);
     });
-    // Clear zones
-    pinnedZone.innerHTML = '';
-    pileZone.innerHTML = '';
+
+    pinnedZone.innerHTML = "";
+    pileZone.innerHTML   = "";
     pinnedZone.appendChild(pinnedFrag);
     pileZone.appendChild(pileFrag);
   }
 
-  // Initialize Barba page transition logic
+  // initialize Barba transitions
   barba.init({
     transitions: [{
-      name: 'wordplay-fade',
+      name: "wordplay-fade",
       sync: false,
-      // Leave hook: fade out old content and preserve layout to prevent footer jump
+
+      // fade out old page and lock footer
       leave({ current }) {
-        // Preserve wrapper height to prevent footer jump
+        prevPinnedSlug = getPinnedSlug();                   // remember old pin
+        pileZone.removeEventListener("click", onPileClick); // disable further clicks
+        pileZone.style.pointerEvents = "none";              // block pointer events
+        body.classList.add("is-transitioning");             // add transition flag
         wrapper.style.minHeight = `${current.container.offsetHeight}px`;
-        // Add transition class to body to overlay containers
-        body.classList.add('is-transitioning');
         return gsap.to(current.container, { autoAlpha: 0, duration: FADE_DURATION })
-          .then(() => {
-            // Clear the wrapper min-height after fade-out completes
-            wrapper.style.minHeight = '';
-          });
+          .then(() => wrapper.style.minHeight = "");
       },
-      // Before Enter hook: prepare new content container for fade-in
+
+      // prepare incoming page
       beforeEnter({ next }) {
-        // Immediately update header zones for incoming page to avoid flicker
-        const slug = Array.isArray(next.namespace)
-          ? next.namespace[0]
-          : next.namespace;
-        updateWordplayZones(slug);
-        gsap.set(next.container, { autoAlpha: 0, visibility: 'visible' });
+        const slug = Array.isArray(next.namespace) ? next.namespace[0] : next.namespace;
+        if (slug !== getPinnedSlug()) updateWordplayZones(slug); // only update when needed
+        gsap.set(next.container, { autoAlpha: 0, visibility: "visible" });
       },
-      // Enter hook: fade in new content (header zones already updated in beforeEnter)
+
+      // fade in new page
       enter({ next }) {
-        // Fade in then Reset Transition flag
         return gsap.to(next.container, { autoAlpha: 1, duration: FADE_DURATION })
-          .then(() => {
-            resetTransitionGuard();
-          })
-          .catch(err => {
-            console.error('[wordplay] Transition enter error:', err);
-            resetTransitionGuard();
-          });
+          .then(resetTransitionGuard)
+          .catch(err => { console.error("[wordplay] enter error:", err); resetTransitionGuard(); });
       },
-    }]
+    }],
   });
-  // Fallback hook to reset guard if needed after any transition
-  barba.hooks.after(resetTransitionGuard);
+
+  barba.hooks.after(resetTransitionGuard); // fallback reset
 });

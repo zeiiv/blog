@@ -1,5 +1,5 @@
 ---
-layout: bilingual
+layout: default
 title: "place time"
 title_he: ״מקום זמן״
 ---

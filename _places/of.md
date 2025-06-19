@@ -1,8 +1,7 @@
 ---
-layout: bilingual
+layout: default
 title: "place of"
 title_he: ״מקום של״
-namespace: wordplay-page 
 ---
 # Placeholder Page: Of
 

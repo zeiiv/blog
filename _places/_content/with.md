@@ -1,5 +1,5 @@
 ---
-layout: bilingual
+layout: default
 title: "place with"
 title_he: ״מקום עם״
 ---

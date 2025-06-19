@@ -20,8 +20,18 @@
 
   <main data-barba="container"
     data-barba-namespace="{% if page.url == '/' %}place{% else %}{{ page.url | slugify }}{% endif %}">
-    {{ content }}
+
+    <div class="content-lang">
+      <div class="content-en">
+        {{ content | split: '%%%HEBREW%%%' | first }}
+      </div>
+      <div class="content-he">
+        {{ content | split: '%%%HEBREW%%%' | last }}
+      </div>
+    </div>
+
     {% include after-content.html %}
+
     <div id="footer" class="page__footer">
       <footer>
         {% include footer/custom.html %}

@@ -1,8 +1,7 @@
 ---
-layout: bilingual
+layout: default
 title: "place time"
 title_he: ״מקום זמן״
-namespace: wordplay-page 
 ---
 # Placeholder Page: Time
 

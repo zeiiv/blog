@@ -1,5 +1,5 @@
 ---
-layout: bilingual
+layout: default
 title: "placeless"
 title_he: ״מקום חסר״
 ---

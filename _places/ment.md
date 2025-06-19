@@ -1,8 +1,7 @@
 ---
-layout: bilingual
+layout: default
 title: "placement"
 title_he: ״מיקום אחר״
-namespace: wordplay-page 
 ---
 # Placeholder Page: Ment
 

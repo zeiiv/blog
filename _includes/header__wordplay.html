@@ -1,57 +1,6 @@
-{%- assign lang = page.lang | default: 'en' -%}
-{% assign current_slug = page.slug %}
-{% assign slugs = site.data.wordplay %}
-
-<header class="wordplay-header" id="wordplay-header">
-  <div class="wordplay-inner-wrap">
-    <div class="wordplay-menu">
-      <!-- Zone 1: The static "place" word -->
-      <div class="wordplay-zone zone-place">
-        <div class="word-item static-word">
-          <a href="{{ '/' | relative_url }}" class="word" data-id="place">
-            <span class="en">place</span>
-            <span class="he">מקום</span>
-          </a>
-        </div>
-      </div>
-
-      <!-- Zone 2: The Pinned Word -->
-      <div class="wordplay-zone zone-pinned">
-        {% for item in slugs %}
-          {% if item.slug == current_slug %}
-            {% assign url = "/" | append: item.slug | append: "/" %}
-            <div class="word-item">
-              <a href="{{ url | relative_url }}" class="word" data-id="{{ item.slug }}">
-                <span class="en">{{ item.en }}</span>
-                <span class="he">{{ item.he }}</span>
-              </a>
-            </div>
-          {% endif %}
-        {% endfor %}
-      </div>
-
-      <!-- Zone 3: The Pile of Other Words -->
-      <div class="wordplay-zone zone-pile">
-        {% for item in slugs %}
-          {% if item.slug != current_slug and item.slug != "" %}
-            {% assign url = "/" | append: item.slug | append: "/" %}
-            <div class="word-item">
-              <a href="{{ url | relative_url }}" class="word" data-id="{{ item.slug }}">
-                <span class="en">{{ item.en }}</span>
-                <span class="he">{{ item.he }}</span>
-              </a>
-            </div>
-          {% endif %}
-        {% endfor %}
-      </div>
-
-    </div>
-    <div class="word-item lang-switcher">
-      <button class="word lang-toggle" id="lang-toggle" aria-label="Switch Language">
-        <span class="en">ע</span>
-        <span class="he">E</span>
-      </button>
-    </div>
-  </div>
-  
-</header>
+import barba from "https://cdn.skypack.dev/@barba/core@2.10.3"; // Barba.js page transitions
+gsap.registerPlugin(Flip); // register FLIP
+import { CustomEase } from "https://cdn.skypack.dev/gsap@3.12.5/CustomEase"; // GSAP CustomEase plugin
+gsap.registerPlugin(CustomEase);
+// Define a flat ease that only eases at start/end with constant mid-phase
+CustomEase.create("flatEase", "M0,0 C0.15,0.15 0.85,0.85 1,1");

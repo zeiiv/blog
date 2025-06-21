@@ -2,14 +2,18 @@ import gsap from "https://cdn.skypack.dev/gsap@3.12.5"; // GSAP core
 import { Flip } from "https://cdn.skypack.dev/gsap@3.12.5/Flip"; // GSAP FLIP plugin
 import barba from "https://cdn.skypack.dev/@barba/core@2.10.3"; // Barba.js page transitions
 gsap.registerPlugin(Flip); // register FLIP
+import { CustomEase } from "https://cdn.skypack.dev/gsap@3.12.5/CustomEase"; // GSAP CustomEase plugin
+gsap.registerPlugin(CustomEase);
+// Define a flat ease that only eases at start/end with constant mid-phase
+CustomEase.create("flatEase", "M0,0 C0.15,0.15 0.85,0.85 1,1");
 
 document.addEventListener("DOMContentLoaded", () => {    // WHEN DOM IS LOADED
 
   let prevPinnedSlug = null;                             // reset previously pinned slug
   let currentLang;                                       // Track current language
 
-  const HEADER_ANIM_DURATION = 1;                        // header FLIP duration (s)
-  const FADE_DURATION = HEADER_ANIM_DURATION / 2;        // content fade duration (s)
+  const FADE_DURATION = 0.5;                            // unified duration for fades and flips (s)
+  const HEADER_ANIM_DURATION = FADE_DURATION*2;           // header FLIP duration matches fade
 
   const header = document.getElementById("wordplay-header");      // header element
   const pileZone = header.querySelector(".zone-pile");            // pile container
@@ -48,7 +52,7 @@ document.addEventListener("DOMContentLoaded", () => {    // WHEN DOM IS LOADED
         // Apply new language
         applyLanguage(newLang, true);
         // Animate header word positions via Flip
-        Flip.from(flipState, { duration: 0.5, ease: 'power1.inOut' });
+        Flip.from(flipState, { duration: HEADER_ANIM_DURATION, ease: 'flatEase' });
         // Animate the language toggle button with a pulse
         gsap.fromTo(langToggle, 
           { scale: 1.2 }, 
@@ -220,7 +224,7 @@ document.addEventListener("DOMContentLoaded", () => {    // WHEN DOM IS LOADED
     pinnedZone.style.visibility = 'visible';
     // Animate items into their new positions (skip on initial load)
     if (!isInitialRender) {
-      Flip.from(flipState, { duration: 0.5, ease: 'power1.inOut' });
+      Flip.from(flipState, { duration: HEADER_ANIM_DURATION, ease: 'flatEase' });
     } else {
       isInitialRender = false;
     }
@@ -254,7 +258,17 @@ document.addEventListener("DOMContentLoaded", () => {    // WHEN DOM IS LOADED
         wrapper.style.minHeight = `${current.container.offsetHeight}px`;
         // Listen for window resize to maintain wrapper height
         window.addEventListener('resize', onResize);
-        return gsap.to(current.container, { autoAlpha: 0, duration: FADE_DURATION })
+        // Determine slide direction based on language: en → right, he → left
+        const dir = currentLang === 'he' ? -50 : 50;
+        // Capture header state for FLIP if needed (before fade)
+        // const flipState = Flip.getState([...placeZone.children, ...pinnedZone.children, ...pileZone.children]);
+        return gsap.timeline()
+          .to(current.container, {
+            autoAlpha: 0,
+            x: dir,
+            duration: FADE_DURATION,
+            ease: 'power1.inOut'
+          }, 0)
           .then(() => {
             wrapper.style.minHeight = "";  // clear height lock
           })
@@ -270,14 +284,30 @@ document.addEventListener("DOMContentLoaded", () => {    // WHEN DOM IS LOADED
       beforeEnter({ next }) { // prepare incoming page
         const slug = Array.isArray(next.namespace) ? next.namespace[0] : next.namespace; // normalize slug
         updateWordplayZones(slug); // always sync header based on slug
-        gsap.set(next.container, { autoAlpha: 0, visibility: "visible" });
+        // Determine slide direction for incoming content (reverse of leave)
+        const dir = currentLang === 'he' ? -50 : 50;
+        gsap.set(next.container, { autoAlpha: 0, x: dir, visibility: "visible" });
       },
 
       // fade in new page
       enter({ next }) {
-        return gsap.to(next.container, { autoAlpha: 1, duration: FADE_DURATION })
-          .then(resetTransitionGuard)
-          .catch(err => { console.error("[wordplay] enter error:", err); resetTransitionGuard(); });
+        // Slide- and fade-in incoming content
+        const dir = currentLang === 'he' ? -50 : 50;
+        return new Promise(resolve => {
+          gsap.fromTo(next.container,
+            { autoAlpha: 0, x: dir },
+            {
+              autoAlpha: 1,
+              x: 0,
+              duration: FADE_DURATION,
+              ease: 'power1.inOut',
+              onComplete: () => {
+                resetTransitionGuard();
+                resolve();
+              }
+            }
+          );
+        });
       },
     }],
   });

@@ -3,17 +3,27 @@
 
 <!doctype html>
 {% include copyright.html %}
-<html lang="{{ site.locale | replace: " _", "-" | default: "en" }}" class="no-js">
+<html lang="{{ site.locale | replace: " _", "-" | default: "en" }}" dir="{% if page.rtl %}rtl{% else %}ltr{% endif %}" class="no-js">
 
 <head>
-</head>
-{% include head.html %}
-{% include head/custom.html %}
+  <script>
+    (function() {  
+      var stored = localStorage.getItem('place-lang');
+      if (stored === 'he' || stored === 'en') {
+        const html = document.documentElement;
+        html.classList.remove('lang--he','lang--en');
+        html.classList.add('lang--' + stored);
+        html.setAttribute('lang', stored);
+        html.setAttribute('dir', stored === 'he' ? 'rtl' : 'ltr');
+      }
+    })();
+  </script>
+  {% include head.html %}
+  {% include head/custom.html %}
 </head>
 
 <body data-barba="wrapper"
-  class="layout--{{ page.layout | default: layout.layout }} skin--{{ site.minimal_mistakes_skin | default: 'default' }} lang--{{ page.lang | default: site.lang }}{% if page.classes or layout.classes %}{{ page.classes | default: layout.classes | join: ' ' | prepend: ' ' }}{% endif %}"
-  dir="{% if page.rtl %}rtl{% else %}ltr{% endif %}">
+  class="layout--{{ page.layout | default: layout.layout }} skin--{{ site.minimal_mistakes_skin | default: 'default' }} {% if page.classes or layout.classes %}{{ page.classes | default: layout.classes | join: ' ' | prepend: ' ' }}{% endif %}">
 
   {% include_cached skip-links.html %}
   {% include header__wordplay.html %}
@@ -21,14 +31,7 @@
   <main data-barba="container"
     data-barba-namespace="{% if page.url == '/' %}place{% else %}{{ page.url | slugify }}{% endif %}">
 
-    <div class="content-lang">
-      <div class="content-en">
-        {{ content | split: '%%%HEBREW%%%' | first }}
-      </div>
-      <div class="content-he">
-        {{ content | split: '%%%HEBREW%%%' | last }}
-      </div>
-    </div>
+    {{ content }}
 
     {% include after-content.html %}
 
@@ -39,7 +42,6 @@
       </footer>
     </div>
   </main>
-
 
   <script type="module" src="{{ '/assets/js/wordplay.js' | relative_url }}"></script>
 </body>

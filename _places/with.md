@@ -1,7 +1,8 @@
 ---
-layout: default
+layout: single
 title: "place with"
 title_he: ״מקום עם״
+no_pagination: true
 ---
 # Placeholder Page: With
 

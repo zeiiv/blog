@@ -1,42 +1,60 @@
-/* ==========================================================================
-   Wordplay Header Styles (Final Unified System)
-   This file handles LAYOUT and STYLING only.
-   ========================================================================== */
-
 // --- Main Header & Menu Layout ---
 .wordplay-header {
   width: 100%;
   position: relative;
-  z-index: 9999;
+  z-index: 20;
+}
+
+.wordplay-inner-wrap {
+  margin-inline: auto;
+  padding: 1em;
+  max-width: 100%;
+  display: flex;
+  justify-content: space-between;
+  @include breakpoint($x-large) {
+    max-width: $max-width;
+  }
 }
 
 .wordplay-menu {
   display: flex;
+  width: 100%;
+  justify-content: space-between;
   align-items: center;
-  padding: 1rem 1.5rem;
 }
 
-// --- Zone Layout ---
 .wordplay-zone {
   display: flex;
   align-items: center;
 }
 
+// Ensure each zone occupies its column
+
 .zone-place {
+  flex: 0 0 auto;  // size to content
+  justify-content: flex-start;
+  display: flex;
+  flex-direction: column;      // stack place and lang-switcher
+  align-items: flex-start;     // left-align children
 }
 
 .zone-pinned {
-  margin-right: auto;
-  margin-inline-start: .5em;
+  justify-content: flex-start;
+  flex: 0 0 auto;  // size to content
+  margin-inline-start: 0.5em;
 }
 
 .zone-pile {
   justify-content: flex-end;
+  flex: 1 1 auto;  // expand to fill
   column-gap: .5em;
 }
 
 // --- Word Item Styling ---
 .word-item {
+  display: block;
+  list-style-type: none;
+  white-space: nowrap;
   .word {
     @extend .btn;
     @extend .btn--small;
@@ -44,49 +62,61 @@
   }
 }
 
-// Language switcher specific styling
+/* Floating language button */
 .lang-switcher {
-  float: left;
-  padding: 0rem 1.5rem;
+  position: absolute;
+  top: 3rem;               // slide it down from the top of the header
+  margin-inline-start: 0;             // over the gutter on the right side
+  opacity: 100;            // hide by default
+  pointer-events: none;    // don’t intercept clicks when hidden
+
+  button {
+    pointer-events: auto;  // allow clicks when visible
+  }
 }
 
-// --- Language Switching System ---
-// Default: Show English, Hide Hebrew
-.en {
-  display: inline;
+html.lang--en .word .en { display: inline; }
+html.lang--en .word .he { display: none; }
+html.lang--he .word .he { display: inline; }
+html.lang--he .word .en { display: none; }
+
+.content-lang {
+  /* Hide both language sections by default */
+  .en,
+  .he {
+    display: none;
+    width: 100%;
+  }
+  /* Show only the active language content */
+  html.lang--en & .en {
+    display: block;
+  }
+  html.lang--he & .he {
+    display: block;
+  }
 }
 
-.he {
-  display: none;
-}
-
-// When Hebrew is active: Show Hebrew, Hide English
-body.lang-he {
-  .en {
+/* Switch for ui-text and config-text */
+.text-lang {
+  /* Hide all language spans by default */
+  .en,
+  .he {
     display: none;
   }
-
-  .he {
+  /* Show only the correct language */
+  html.lang--en & .en {
     display: inline;
   }
-
-  // Set document direction for Hebrew
-  direction: rtl;
+  html.lang--he & .he {
+    display: inline;
+  }
 }
 
-// --- Content Language Switching ---
-// Hide Hebrew content by default
-.content-he {
-  display: none;
-}
-
-// Show Hebrew content when Hebrew is active
-body.lang-he .content-he {
-  display: block;
-}
-
-body.lang-he .content-en {
-  display: none;
+/* Ensure lang toggle supports transforms */
+#lang-toggle,
+.lang-toggle {
+  display: inline-block;
+  transform-origin: center center;
 }
 
 /* Ensure containers overlap during transition */
@@ -96,37 +126,22 @@ body.lang-he .content-en {
 
 [data-barba="container"] {
   position: absolute;
-  top: 78px;
-  left: 0;
+  inset-block-start: 100px;
+  inset-inline-start: 0;
   width: 100%;
 }
 
 /* Fade classes applied by Barba */
 .css-fade-leave-active,
 .css-fade-enter-active {
-  transition: opacity 0.5s ease;
-}
+  transition: opacity 0.5s ease; }
 
-.css-fade-leave-to {
-  opacity: 0;
-}
+.css-fade-leave-to { opacity: 0; }
+.css-fade-enter { opacity: 0; }
+.css-fade-enter-to { opacity: 1; }
 
-.css-fade-enter {
-  opacity: 0;
-}
-
-.css-fade-enter-to {
-  opacity: 1;
-}
-
-/* When JS is enabled, hide header zones until JS has initialized */
-.js .wordplay-header .zone-pile,
-.js .wordplay-header .zone-pinned {
+/* Hide pile and pinned zones until JS reorders them */
+.zone-pile,
+.zone-pinned {
   visibility: hidden;
-}
-
-/* Reveal header zones once JavaScript setup completes */
-.js .wordplay-header.is-ready .zone-pile,
-.js .wordplay-header.is-ready .zone-pinned {
-  visibility: visible;
 }

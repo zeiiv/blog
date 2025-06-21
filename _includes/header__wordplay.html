@@ -3,53 +3,55 @@
 {% assign slugs = site.data.wordplay %}
 
 <header class="wordplay-header" id="wordplay-header">
-  <div class="wordplay-menu">
-    <!-- Zone 1: The static "place" word -->
-    <div class="wordplay-zone zone-place">
-      <div class="word-item static-word">
-        <a href="{{ '/' | relative_url }}" class="word" data-id="place">
-          <span class="en">place</span>
-          <span class="he">מקום</span>
-        </a>
+  <div class="wordplay-inner-wrap">
+    <div class="wordplay-menu">
+      <!-- Zone 1: The static "place" word -->
+      <div class="wordplay-zone zone-place">
+        <div class="word-item static-word">
+          <a href="{{ '/' | relative_url }}" class="word" data-id="place">
+            <span class="en">place</span>
+            <span class="he">מקום</span>
+          </a>
+        </div>
       </div>
-    </div>
 
-    <!-- Zone 2: The Pinned Word -->
-    <div class="wordplay-zone zone-pinned">
-      {% for item in slugs %}
-      {% if item.slug == current_slug %}
-      {% assign url = "/" | append: item.slug | append: "/" %}
-      <div class="word-item">
-        <a href="{{ url | relative_url }}" class="word" data-id="{{ item.slug }}">
-          <span class="en">{{ item.en }}</span>
-          <span class="he">{{ item.he }}</span>
-        </a>
+      <!-- Zone 2: The Pinned Word -->
+      <div class="wordplay-zone zone-pinned">
+        {% for item in slugs %}
+          {% if item.slug == current_slug %}
+            {% assign url = "/" | append: item.slug | append: "/" %}
+            <div class="word-item">
+              <a href="{{ url | relative_url }}" class="word" data-id="{{ item.slug }}">
+                <span class="en">{{ item.en }}</span>
+                <span class="he">{{ item.he }}</span>
+              </a>
+            </div>
+          {% endif %}
+        {% endfor %}
       </div>
-      {% endif %}
-      {% endfor %}
-    </div>
 
-    <!-- Zone 3: The Pile of Other Words -->
-    <div class="wordplay-zone zone-pile">
-      {% for item in slugs %}
-      {% if item.slug != current_slug and item.slug != "" %}
-      {% assign url = "/" | append: item.slug | append: "/" %}
-      <div class="word-item">
-        <a href="{{ url | relative_url }}" class="word" data-id="{{ item.slug }}">
-          <span class="en">{{ item.en }}</span>
-          <span class="he">{{ item.he }}</span>
-        </a>
+      <!-- Zone 3: The Pile of Other Words -->
+      <div class="wordplay-zone zone-pile">
+        {% for item in slugs %}
+          {% if item.slug != current_slug and item.slug != "" %}
+            {% assign url = "/" | append: item.slug | append: "/" %}
+            <div class="word-item">
+              <a href="{{ url | relative_url }}" class="word" data-id="{{ item.slug }}">
+                <span class="en">{{ item.en }}</span>
+                <span class="he">{{ item.he }}</span>
+              </a>
+            </div>
+          {% endif %}
+        {% endfor %}
       </div>
-      {% endif %}
-      {% endfor %}
-    </div>
 
+    </div>
+    <div class="word-item lang-switcher">
+      <button class="word lang-toggle" id="lang-toggle" aria-label="Switch Language">
+        <span class="en">ע</span>
+        <span class="he">E</span>
+      </button>
+    </div>
   </div>
-  <!-- Language Switcher Button -->
-  <div class="word-item lang-switcher">
-    <button class="word lang-toggle" id="lang-toggle" aria-label="Switch Language">
-      <span class="en">ע</span>
-      <span class="he">E</span>
-    </button>
-  </div>
+  
 </header>

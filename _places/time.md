@@ -1,7 +1,8 @@
 ---
-layout: default
+layout: single
 title: "place time"
 title_he: ״מקום זמן״
+no_pagination: true
 ---
 # Placeholder Page: Time
 

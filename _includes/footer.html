@@ -1,13 +1,28 @@
+{% assign ui-en = site.data.ui-text.en %}
+{% assign ui-he = site.data.ui-text.he %}
+{% assign co-en = site.data.config-text.en %}
+{% assign co-he = site.data.config-text.he %}
+
 <div class="page__footer-follow">
   <ul class="social-icons">
-    {% if site.data.ui-text[page.locale].follow_label %}
-    <li><strong>{{ site.data.ui-text[page.locale].follow_label }}</strong></li>
+    {% assign follow_en = ui-en.follow_label %}
+    {% assign follow_he = ui-he.follow_label %}
+    {% if follow_en or follow_he %}
+    <li>
+      <strong class="text-lang">
+        <span class="en">{{ follow_en }}</span>
+        <span class="he">{{ follow_he }}</span>
+      </strong>
+    </li>
     {% endif %}
     {% if site.footer.links %}
     {% for link in site.footer.links %}
     {% if link.label and link.url %}
     <li><a href="{{ link.url }}" rel="nofollow noopener noreferrer"><i class="{{ link.icon | default: 'fas fa-link' }}"
-          aria-hidden="true"></i> {{ link.label }}</a></li>
+          aria-hidden="true"></i> <span class="text-lang">
+            <span class="en">{{ link.label_en | default: link.label }}</span>
+            <span class="he">{{ link.label_he | default: link.label }}</span>
+          </span></a></li>
     {% endif %}
     {% endfor %}
     {% endif %}
@@ -15,16 +30,42 @@
     {% unless site.atom_feed.hide %}
     <li><a
         href="{% if site.atom_feed.path %}{{ site.atom_feed.path }}{% else %}{{ '/feed.xml' | relative_url }}{% endif %}"><i
-          class="fas fa-fw fa-rss-square" aria-hidden="true"></i> {{ site.data.ui-text[page.locale].feed_label |
-        default: "Feed" }}</a></li>
+          class="fas fa-fw fa-rss-square" aria-hidden="true"></i> {% assign feed_en = ui-en.feed_label %}
+          {% assign feed_he = ui-he.feed_label %}
+          <span class="text-lang">
+            <span class="en">{{ feed_en }}</span>
+            <span class="he">{{ feed_he }}</span>
+          </span></a></li>
     {% endunless %}
   </ul>
 </div>
 
 <div class="page__footer-copyright">&copy; {{ site.time | date: '%Y' }} <a
-    href="{{ site.data.config-text[page.locale].copyright_url | default: site.url }}">{{
-    site.data.config-text[page.locale].name | default: site.title }}</a>. {{ site.data.ui-text[page.locale].powered_by |
-  default: "Powered by" }} <a href="https://jekyllrb.com" rel="nofollow">{{
-    site.data.ui-text[page.locale].generator_name | default: "Jekyll" }}</a> &amp; <a
-    href="https://mademistakes.com/work/jekyll-themes/minimal-mistakes/" rel="nofollow">{{
-    site.data.ui-text[page.locale].theme_name | default: "Minimal Mistakes" }}</a>.</div>
+    href="{{ site.data.config-text[page.lang].copyright_url | default: site.url }}">
+    {% assign name_en = co-en.name | default: site.title %}
+    {% assign name_he = co-he.name | default: site.title %}
+    <span class="text-lang">
+      <span class="en">{{ name_en }}</span>
+      <span class="he">{{ name_he }}</span>
+    </span>
+  </a>. {% assign pb_en = ui-en.powered_by %}
+  {% assign pb_he = ui-he.powered_by %}
+  <span class="text-lang">
+    <span class="en">{{ pb_en }}</span>
+    <span class="he">{{ pb_he }}</span>
+  </span> <a href="https://jekyllrb.com" rel="nofollow">
+    {% assign gen_en = ui-en.generator_name %}
+    {% assign gen_he = ui-he.generator_name %}
+    <span class="text-lang">
+      <span class="en">{{ gen_en }}</span>
+      <span class="he">{{ gen_he }}</span>
+    </span>
+  </a> &amp; <a
+    href="https://mademistakes.com/work/jekyll-themes/minimal-mistakes/" rel="nofollow">
+    {% assign theme_en = ui-en.theme_name %}
+    {% assign theme_he = ui-he.theme_name %}
+    <span class="text-lang">
+      <span class="en">{{ theme_en }}</span>
+      <span class="he">{{ theme_he }}</span>
+    </span>
+  </a>.</div>

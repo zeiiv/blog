@@ -50,7 +50,14 @@ layout: default
             </nav>
           </aside>
         {% endif %}
-        {{ content }}
+      <div class="content-lang">
+        <div class="en">
+          {{ content | split: '%%%HEBREW%%%' | first }}
+        </div>
+        <div class="he">
+          {{ content | split: '%%%HEBREW%%%' | last }}
+        </div>
+      </div>
         {% if page.link %}<div><a href="{{ page.link }}" class="btn btn--primary">{{ site.data.ui-text[site.locale].ext_link_label | default: "Direct Link" }}</a></div>{% endif %}
       </section>
 

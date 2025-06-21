@@ -1,5 +1,5 @@
 ---
-layout: bilingual
+layout: default
 title: "Font Style Preview"
 title_he: "תצוגת סגנון טיפוגרפיה"
 permalink: "/"

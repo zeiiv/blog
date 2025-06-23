@@ -1,6 +1,49 @@
-import barba from "https://cdn.skypack.dev/@barba/core@2.10.3"; // Barba.js page transitions
-gsap.registerPlugin(Flip); // register FLIP
-import { CustomEase } from "https://cdn.skypack.dev/gsap@3.12.5/CustomEase"; // GSAP CustomEase plugin
-gsap.registerPlugin(CustomEase);
-// Define a flat ease that only eases at start/end with constant mid-phase
-CustomEase.create("flatEase", "M0,0 C0.15,0.15 0.85,0.85 1,1");
+---
+---
+
+<!doctype html>
+{% include copyright.html %}
+<html lang="{{ site.locale | replace: " _", "-" | default: "en" }}" dir="{% if page.rtl %}rtl{% else %}ltr{% endif %}" class="no-js">
+
+<head>
+  <script>
+    (function() {  
+      var stored = localStorage.getItem('place-lang');
+      if (stored === 'he' || stored === 'en') {
+        const html = document.documentElement;
+        html.classList.remove('lang--he','lang--en');
+        html.classList.add('lang--' + stored);
+        html.setAttribute('lang', stored);
+        html.setAttribute('dir', stored === 'he' ? 'rtl' : 'ltr');
+      }
+    })();
+  </script>
+  {% include head.html %}
+  {% include head/custom.html %}
+</head>
+
+<body data-barba="wrapper"
+  class="layout--{{ page.layout | default: layout.layout }} skin--{{ site.minimal_mistakes_skin | default: 'default' }} {% if page.classes or layout.classes %}{{ page.classes | default: layout.classes | join: ' ' | prepend: ' ' }}{% endif %}">
+
+  {% include_cached skip-links.html %}
+  {% include header__wordplay.html %}
+
+  <main data-barba="container"
+    data-barba-namespace="{% if page.url == '/' %}place{% else %}{{ page.url | slugify }}{% endif %}">
+
+    {{ content }}
+
+    {% include after-content.html %}
+
+    <div id="footer" class="page__footer">
+      <footer>
+        {% include footer/custom.html %}
+        {% include_cached footer.html %}
+      </footer>
+    </div>
+  </main>
+
+  <script type="module" src="{{ '/assets/js/wordplay.js' | relative_url }}"></script>
+</body>
+
+</html>

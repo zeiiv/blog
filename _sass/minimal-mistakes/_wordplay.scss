@@ -1,6 +1,155 @@
-import barba from "https://cdn.skypack.dev/@barba/core@2.10.3"; // Barba.js page transitions
-gsap.registerPlugin(Flip); // register FLIP
-import { CustomEase } from "https://cdn.skypack.dev/gsap@3.12.5/CustomEase"; // GSAP CustomEase plugin
-gsap.registerPlugin(CustomEase);
-// Define a flat ease that only eases at start/end with constant mid-phase
-CustomEase.create("flatEase", "M0,0 C0.15,0.15 0.85,0.85 1,1");
+// --- Main Header & Menu Layout ---
+.wordplay-header {
+  width: 100%;
+  position: relative;
+  z-index: 20;
+}
+
+.wordplay-inner-wrap {
+  margin-inline: auto;
+  padding: 1em;
+  max-width: 100%;
+  display: flex;
+  justify-content: space-between;
+  @include breakpoint($x-large) {
+    max-width: $max-width;
+  }
+}
+
+.wordplay-menu {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.wordplay-zone {
+  display: flex;
+  align-items: center;
+}
+
+// Ensure each zone occupies its column
+
+.zone-place {
+  flex: 0 0 auto;  // size to content
+  justify-content: flex-start;
+  display: flex;
+  flex-direction: column;      // stack place and lang-switcher
+  align-items: flex-start;     // left-align children
+}
+
+.zone-pinned {
+  justify-content: flex-start;
+  flex: 0 0 auto;  // size to content
+  margin-inline-start: 0.5em;
+}
+/*
+.zone-pile {
+  justify-content: flex-end;
+  flex: 1 1 auto;  // expand to fill
+  column-gap: .5em;
+}*/
+
+// in your SCSS for the minimal-mistakes theme
+.zone-pile {
+  display: flex;
+  justify-content: flex-end;
+  flex: 1 1 auto;
+  gap: 0.5em;
+}
+
+// --- Word Item Styling ---
+.word-item {
+  display: block;
+  list-style-type: none;
+  white-space: nowrap;
+  .word {
+    @extend .btn;
+    @extend .btn--small;
+    @extend .btn--primary;
+  }
+}
+
+/* Floating language button */
+.lang-switcher {
+  position: absolute;
+  top: 3rem;               // slide it down from the top of the header
+  margin-inline-start: 0;             // over the gutter on the right side
+  opacity: 100;            // hide by default
+  pointer-events: none;    // don’t intercept clicks when hidden
+
+  button {
+    pointer-events: auto;  // allow clicks when visible
+  }
+}
+
+html.lang--en .word .en { display: inline; }
+html.lang--en .word .he { display: none; }
+html.lang--he .word .he { display: inline; }
+html.lang--he .word .en { display: none; }
+
+.content-lang {
+  /* Hide both language sections by default */
+  .en,
+  .he {
+    display: none;
+    width: 100%;
+  }
+  /* Show only the active language content */
+  html.lang--en & .en {
+    display: block;
+  }
+  html.lang--he & .he {
+    display: block;
+  }
+}
+
+/* Switch for ui-text and config-text */
+.text-lang {
+  /* Hide all language spans by default */
+  .en,
+  .he {
+    display: none;
+  }
+  /* Show only the correct language */
+  html.lang--en & .en {
+    display: inline;
+  }
+  html.lang--he & .he {
+    display: inline;
+  }
+}
+
+/* Ensure lang toggle supports transforms */
+#lang-toggle,
+.lang-toggle {
+  display: inline-block;
+  transform-origin: center center;
+}
+
+/* Ensure containers overlap during transition */
+[data-barba="wrapper"] {
+  position: relative;
+}
+
+[data-barba="container"] {
+  position: absolute;
+  inset-block-start: 100px;
+  inset-inline-start: 0;
+  width: 100%;
+}
+
+/* Fade classes applied by Barba */
+.css-fade-leave-active,
+.css-fade-enter-active {
+  transition: opacity 0.5s ease; }
+
+.css-fade-leave-to { opacity: 0; }
+.css-fade-enter { opacity: 0; }
+.css-fade-enter-to { opacity: 1; }
+
+/* Hide pile and pinned zones until JS reorders them */
+.zone-pile,
+.zone-pinned {
+  visibility: hidden;
+}

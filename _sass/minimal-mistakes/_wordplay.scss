@@ -1,3 +1,9 @@
+:root {
+  --wp-hover-nudge: 3px;
+  --wp-duration-hover: 0.3s;
+  --wp-duration-fade: 0.5s;
+}
+
 // --- Main Header & Menu Layout ---
 .wordplay-header {
   width: 100%;
@@ -43,12 +49,6 @@
   flex: 0 0 auto;  // size to content
   margin-inline-start: 0.5em;
 }
-/*
-.zone-pile {
-  justify-content: flex-end;
-  flex: 1 1 auto;  // expand to fill
-  column-gap: .5em;
-}*/
 
 // in your SCSS for the minimal-mistakes theme
 .zone-pile {
@@ -63,6 +63,7 @@
   display: block;
   list-style-type: none;
   white-space: nowrap;
+  will-change: transform;
   .word {
     @extend .btn;
     @extend .btn--small;
@@ -142,7 +143,8 @@ html.lang--he .word .en { display: none; }
 /* Fade classes applied by Barba */
 .css-fade-leave-active,
 .css-fade-enter-active {
-  transition: opacity 0.5s ease; }
+  transition: opacity var(--wp-duration-fade) ease;
+}
 
 .css-fade-leave-to { opacity: 0; }
 .css-fade-enter { opacity: 0; }

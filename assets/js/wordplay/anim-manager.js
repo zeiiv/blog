@@ -40,13 +40,13 @@ export const animManager = {
       hasInterrupt: !!existingOnInterrupt
     });
 
-    tl.eventCallback("onComplete", () => {
+    tl.eventCallback("onComplete", function() {
       console.log('[animManager] Timeline completed, calling original callback');
       if (existingOnComplete) existingOnComplete();
       cleanup();
     });
 
-    tl.eventCallback("onInterrupt", () => {
+    tl.eventCallback("onInterrupt", function() {
       console.log('[animManager] Timeline interrupted, calling original callback');
       if (existingOnInterrupt) existingOnInterrupt();
       cleanup();
@@ -180,39 +180,40 @@ export const animManager = {
       
       console.log('[animManager] Animation created - duration:', flipTl.duration(), 'totalDuration:', flipTl.totalDuration());
       
-      // Trigger navigation with delay and error handling
+      // Store navigation callback and trigger during animation
+      flipTl._navigationCallback = navigationCallback;
+      
+      // Trigger navigation partway through the header animation
       if (navigationCallback) {
-        setTimeout(() => {
+        const navigationDelay = flipTl.duration() * 0.4; // Start navigation at 40% of animation
+        flipTl.call(function() {
           try {
-            console.log('[animManager] Triggering navigation with minimal delay');
+            console.log('[animManager] Triggering navigation during header animation (40% complete)');
             navigationCallback();
           } catch (error) {
-            console.error('[animManager] Navigation error:', error);
-            console.error('[animManager] Error details:', {
-              message: error.message,
-              stack: error.stack,
-              barbaExists: !!window.barba
-            });
-            // Ensure interactions are unblocked on navigation error
-            unblockInteractions(blockElements);
+            console.error('[animManager] Navigation error during animation:', error);
           }
-        }, 100); // Short delay to let header animation start
+        }, [], this, navigationDelay);
       }
 
       // Add unblocking to animation completion
-      flipTl.eventCallback("onComplete", () => {
+      flipTl.eventCallback("onComplete", function() {
         console.log('[animManager] Header transition animation completed, unblocking');
         unblockInteractions(blockElements);
       });
       
-      flipTl.eventCallback("onInterrupt", () => {
+      flipTl.eventCallback("onInterrupt", function() {
         console.log('[animManager] Header transition animation interrupted, unblocking');
         unblockInteractions(blockElements);
         
-        // Still navigate even if interrupted
-        if (navigationCallback) {
-          console.log('[animManager] Triggering navigation after animation interrupt');
-          navigationCallback();
+        // Fallback navigation if animation was interrupted before navigation trigger
+        if (flipTl._navigationCallback && flipTl.progress() < 0.4) {
+          try {
+            console.log('[animManager] Triggering fallback navigation after early interrupt');
+            flipTl._navigationCallback();
+          } catch (error) {
+            console.error('[animManager] Navigation error after early interrupt:', error);
+          }
         }
       });
       

@@ -1,5 +1,5 @@
 import gsap, { barba } from "./vendor.js";
-import { SELECTORS, EVENTS, STORAGE_KEYS, CLASSNAMES, BREAKPOINTS } from "./config.js";
+import { SELECTORS, EVENTS, STORAGE_KEYS, CLASSNAMES, BREAKPOINTS, ANIM } from "./config.js";
 import { saveOrder, blockInteractions, unblockInteractions } from "./dom-helpers.js";
 import { animatePlaceFlip, animateHeaderFlip, collapsePile, expandPile, animateHoverIn, animateHoverOut } from "./animations.js";
 import { animManager } from "./anim-manager.js";
@@ -231,47 +231,33 @@ export const initHeaderInteractions = () => {
             getToElement: () => pinnedZone.querySelector(SELECTORS.wordItem),
             domChangeCallback: () => renderHeader(slug, false),
             navigationCallback: () => {
-                try {
-                    console.log('[header-render] Attempting barba navigation to:', link.href);
-                    console.log('[header-render] Barba state check:', {
-                        barbaExists: !!barba,
-                        barbaGoExists: !!(barba && barba.go),
-                        barbaGoIsFunction: !!(barba && typeof barba.go === 'function'),
-                        barbaInitialized: !!(barba && barba.initialized),
-                        barbaRunning: !!(barba && barba.running)
-                    });
-                    
-                    // More comprehensive barba readiness check
-                    if (barba && typeof barba.go === 'function' && !barba.running) {
-                        console.log('[header-render] Barba is ready and not running, attempting navigation');
-                        return barba.go(link.href);
-                    } else if (barba && barba.running) {
-                        console.warn('[header-render] Barba is running another transition, delaying navigation');
-                        // Wait for current transition to finish
-                        setTimeout(() => {
-                            if (typeof barba.go === 'function') {
-                                barba.go(link.href);
-                            } else {
-                                window.location.href = link.href;
-                            }
-                        }, 100);
-                        return;
-                    } else {
-                        console.warn('[header-render] Barba not available or not ready, using fallback navigation');
+                // New approach: Immediate barba navigation with persistent header animation
+                // Header animations run independently across page transitions
+                console.log('[header-render] Starting immediate barba navigation with persistent header animation');
+                
+                // Make header position: fixed so it persists across page changes
+                const headerElement = document.querySelector(SELECTORS.header);
+                if (headerElement) {
+                    headerElement.style.position = 'fixed';
+                    headerElement.style.top = '0';
+                    headerElement.style.left = '0';
+                    headerElement.style.right = '0';
+                    headerElement.style.zIndex = '9999';
+                    headerElement.style.background = 'inherit';
+                    console.log('[header-render] Header made persistent across page transitions');
+                }
+                
+                // Start barba navigation immediately - header animation continues independently
+                if (barba && typeof barba.go === 'function') {
+                    try {
+                        console.log('[header-render] Starting barba navigation immediately');
+                        barba.go(link.href);
+                    } catch (error) {
+                        console.error('[header-render] Barba failed, using fallback:', error);
                         window.location.href = link.href;
                     }
-                } catch (error) {
-                    console.error('[header-render] Barba navigation failed:', error);
-                    console.error('[header-render] Error details:', {
-                        message: error.message,
-                        stack: error.stack,
-                        barbaState: barba ? {
-                            initialized: barba.initialized,
-                            running: barba.running,
-                            hasGo: typeof barba.go
-                        } : 'barba not available'
-                    });
-                    // Fallback to regular navigation if barba fails
+                } else {
+                    console.warn('[header-render] Barba not available, using direct navigation');
                     window.location.href = link.href;
                 }
             },
@@ -360,12 +346,12 @@ export const initHeaderInteractions = () => {
             const tl = animatePlaceFlip(pileZone.children, pinnedElementData);
             
             // Add unblocking to completion
-            tl.eventCallback("onComplete", () => {
+            tl.eventCallback("onComplete", function() {
                 console.log('[header-render] Place flip completed, unblocking');
                 unblockInteractions(blockEls);
             });
             
-            tl.eventCallback("onInterrupt", () => {
+            tl.eventCallback("onInterrupt", function() {
                 console.log('[header-render] Place flip interrupted, unblocking');
                 unblockInteractions(blockEls);
             });

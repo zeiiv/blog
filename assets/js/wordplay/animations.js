@@ -117,38 +117,38 @@ export function animateSwap(originalPositions, toElement) {
     if (shouldAnimate) {
       
       if (isGoingToPinned) {
-        // Main toPinned animation (3-phase)
+        // Main toPinned animation (3-phase: descend → slide → ascend)
         const dropDist = currentElement.offsetHeight * ANIM.values.dipFactor;
         
         // Start at original position
         gsap.set(currentElement, { x: deltaX, y: deltaY });
         
-        // Phase 1: Descend
+        // Phase 1: Descend from original position
         masterTl.to(currentElement, {
           y: deltaY + dropDist,
           duration: ANIM.getDuration('pinnedDescend'),
           ease: ANIM.eases.smooth,
-          onStart: () => console.log('[animations] toPinned phase 1 (descend) started for:', currentId),
-          onComplete: () => console.log('[animations] toPinned phase 1 (descend) completed for:', currentId)
+          onStart: function() { console.log('[animations] toPinned phase 1 (descend) started for:', currentId); },
+          onComplete: function() { console.log('[animations] toPinned phase 1 (descend) completed for:', currentId); }
         }, 0);
 
-        // Phase 2: Slide horizontally
+        // Phase 2: Slide horizontally while staying low
         masterTl.to(currentElement, {
           x: 0,
           duration: ANIM.getDuration('pinnedSlide'),
           ease: ANIM.eases.smooth,
-          onStart: () => console.log('[animations] toPinned phase 2 (slide) started for:', currentId),
-          onComplete: () => console.log('[animations] toPinned phase 2 (slide) completed for:', currentId)
-        }, ANIM.getDuration('pinnedDescend'));
+          onStart: function() { console.log('[animations] toPinned phase 2 (slide) started for:', currentId); },
+          onComplete: function() { console.log('[animations] toPinned phase 2 (slide) completed for:', currentId); }
+        }, ANIM.getDuration('pinnedDescend')); // Start at exact time when descend completes
 
-        // Phase 3: Ascend
+        // Phase 3: Ascend to final position
         masterTl.to(currentElement, {
           y: 0,
           duration: ANIM.getDuration('pinnedAscend'),
           ease: ANIM.eases.bounce,
-          onStart: () => console.log('[animations] toPinned phase 3 (ascend) started for:', currentId),
-          onComplete: () => console.log('[animations] toPinned phase 3 (ascend) completed for:', currentId)
-        }, ANIM.getDuration('pinnedDescend') + ANIM.getDuration('pinnedSlide'));
+          onStart: function() { console.log('[animations] toPinned phase 3 (ascend) started for:', currentId); },
+          onComplete: function() { console.log('[animations] toPinned phase 3 (ascend) completed for:', currentId); }
+        }, ANIM.getDuration('pinnedDescend') + ANIM.getDuration('pinnedSlide')); // Start at exact time when slide completes
         
         console.log('[animations] Added toPinned 3-phase animation for:', currentId);
       } else {
@@ -162,8 +162,8 @@ export function animateSwap(originalPositions, toElement) {
             y: 0,
             duration: ANIM.getDuration('animateToPile'),
             ease: ANIM.eases.smooth,
-            onStart: () => console.log('[animations] toPile/reorder animation started for:', currentId),
-            onComplete: () => console.log('[animations] toPile/reorder animation completed for:', currentId)
+            onStart: function() { console.log('[animations] toPile/reorder animation started for:', currentId); },
+            onComplete: function() { console.log('[animations] toPile/reorder animation completed for:', currentId); }
           }, 0); // Start immediately
           
           console.log('[animations] Added real movement animation for:', currentId);
@@ -176,8 +176,8 @@ export function animateSwap(originalPositions, toElement) {
             scale: 1,
             duration: ANIM.getDuration('animateToPile') * 0.6,
             ease: ANIM.eases.smooth,
-            onStart: () => console.log('[animations] Forced pile animation started for:', currentId),
-            onComplete: () => console.log('[animations] Forced pile animation completed for:', currentId)
+            onStart: function() { console.log('[animations] Forced pile animation started for:', currentId); },
+            onComplete: function() { console.log('[animations] Forced pile animation completed for:', currentId); }
           }, 0.1); // Small delay
           
           console.log('[animations] Added forced pile animation for:', currentId);
@@ -189,14 +189,14 @@ export function animateSwap(originalPositions, toElement) {
   });
   
   // Add safeguards to ensure animation always completes
-  masterTl.eventCallback("onComplete", () => {
+  masterTl.eventCallback("onComplete", function() {
     console.log('[animations] animateSwap completed successfully');
   });
   
-  masterTl.eventCallback("onInterrupt", () => {
+  masterTl.eventCallback("onInterrupt", function() {
     console.warn('[animations] animateSwap was interrupted - clearing transforms');
     // Clear any partial transforms on interruption
-    allCurrentElements.forEach(el => {
+    allCurrentElements.forEach(function(el) {
       if (el) {
         gsap.set(el, { x: 0, y: 0, clearProps: "transform" });
       }
@@ -206,7 +206,7 @@ export function animateSwap(originalPositions, toElement) {
   // Add timeout safety net
   const duration = masterTl.duration();
   if (duration > 0) {
-    setTimeout(() => {
+    setTimeout(function() {
       if (masterTl.progress() < 1 && !masterTl.paused()) {
         console.warn('[animations] Animation timeout - forcing completion');
         masterTl.progress(1);
@@ -282,8 +282,8 @@ export function animatePlaceFlip(children, pinnedElementData = null) {
         y: 0,
         duration: mainAnimationDuration,
         ease: ANIM.eases.smooth,
-        onStart: () => console.log('[animations] Returning word animation started'),
-        onComplete: () => console.log('[animations] Returning word animation completed')
+        onStart: function() { console.log('[animations] Returning word animation started'); },
+        onComplete: function() { console.log('[animations] Returning word animation completed'); }
       }, 0); // Start at beginning of timeline
     } else {
       console.log('[animations] No significant movement for returning word');
@@ -298,8 +298,8 @@ export function animatePlaceFlip(children, pinnedElementData = null) {
       y: 0,
       duration: mainAnimationDuration,
       ease: ANIM.eases.bounce,
-      onStart: () => console.log('[animations] Fallback animation started'),
-      onComplete: () => console.log('[animations] Fallback animation completed')
+      onStart: function() { console.log('[animations] Fallback animation started'); },
+      onComplete: function() { console.log('[animations] Fallback animation completed'); }
     }, 0); // Start at beginning of timeline
   } else {
     console.log('[animations] No returning word found:', {
@@ -316,13 +316,13 @@ export function animatePlaceFlip(children, pinnedElementData = null) {
       // Set initial position for all pile words
       gsap.set(word, { x: -15 });
       
-      // Stagger the pile animations to start slightly after the returning word
+      // Stagger the pile animations to start slightly after the returning word; 
       tl.to(word, {
         x: 0,
         duration: ANIM.getDuration('header') * 0.4,
         ease: ANIM.eases.smooth,
-        onStart: () => console.log('[animations] Pile word', index, 'animation started'),
-        onComplete: () => console.log('[animations] Pile word', index, 'animation completed')
+        onStart: function() { console.log('[animations] Pile word', index, 'animation started'); },
+        onComplete: function() { console.log('[animations] Pile word', index, 'animation completed'); }
       }, index * 0.05 + 0.1); // Start 100ms after timeline begins, with stagger
     });
   } else {
@@ -352,7 +352,7 @@ export function animateLeavePage(container) {
     x: dirOffset,
     duration: dur,
     ease: ANIM.eases.smooth
-  }).then(() => {});
+  }).then(function() {});
 }
 
 /**
@@ -458,11 +458,11 @@ export function animateLanguageTransition({ newLang, applyLanguage, renderHeader
       
       // Create timeline with logging
       const masterTl = gsap.timeline({
-        onComplete: () => {
+        onComplete: function() {
           console.log('[animations] Language transition completed');
           resolve();
         },
-        onInterrupt: () => {
+        onInterrupt: function() {
           console.warn('[animations] Language transition interrupted');
           reject(new Error('Language transition interrupted'));
         }
@@ -477,40 +477,40 @@ export function animateLanguageTransition({ newLang, applyLanguage, renderHeader
         autoAlpha: 0,
         duration: ANIM.getDuration('fade'),
         ease: ANIM.eases.smooth,
-        onStart: () => console.log('[animations] Content fade out started'),
-        onComplete: () => console.log('[animations] Content fade out completed')
+        onStart: function() { console.log('[animations] Content fade out started'); },
+        onComplete: function() { console.log('[animations] Content fade out completed'); }
       }, 0);
 
       // Phase 2: Apply language changes at the right time
-      masterTl.call(() => {
+      masterTl.call(function() {
         console.log('[animations] Applying language change to:', newLang);
         applyLanguage(newLang, true);
         renderHeader('place', false); // Don't animate header render during language switch
-      }, ANIM.getDuration('fade'));
+      }, [], this, ANIM.getDuration('fade'));
 
       // Phase 3: Animate header elements with Flip
-      masterTl.call(() => {
+      masterTl.call(function() {
         console.log('[animations] Starting header flip animation');
         
         // Animate the header elements with Flip
         const flipAnimation = Flip.from(flipState, {
           duration: ANIM.getDuration('header'),
           ease: ANIM.eases.flat,
-          onStart: () => console.log('[animations] Header flip started'),
-          onComplete: () => console.log('[animations] Header flip completed')
+          onStart: function() { console.log('[animations] Header flip started'); },
+          onComplete: function() { console.log('[animations] Header flip completed'); }
         });
         
         // Add the flip animation to the timeline
         masterTl.add(flipAnimation, ANIM.getDuration('fade') + 0.1);
-      });
+      }, [], this, ANIM.getDuration('fade') + 0.1);
 
       // Phase 4: Fade content back in
       masterTl.to(content, {
         autoAlpha: 1,
         duration: ANIM.getDuration('fade'),
         ease: ANIM.eases.smooth,
-        onStart: () => console.log('[animations] Content fade in started'),
-        onComplete: () => console.log('[animations] Content fade in completed')
+        onStart: function() { console.log('[animations] Content fade in started'); },
+        onComplete: function() { console.log('[animations] Content fade in completed'); }
       }, ANIM.getDuration('fade') + ANIM.getDuration('header'));
 
       console.log('[animations] Language transition timeline created - duration:', masterTl.duration());

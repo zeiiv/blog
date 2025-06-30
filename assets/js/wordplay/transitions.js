@@ -76,8 +76,34 @@ export const initPageTransitions = ({ renderHeader, getCurrentLang }) => {
             beforeEnter({ next }) {
                 try {
                     window.scrollTo(0, 0);
+                    
+                    // Clear any stale navigation flags on page load
+                    sessionStorage.removeItem('_navigationInProgress');
+                    sessionStorage.removeItem('_navigationTimestamp');
+                    
+                    // Reset header positioning after page transition
+                    const headerElement = document.querySelector('#wordplay-header');
+                    if (headerElement) {
+                        headerElement.style.position = '';
+                        headerElement.style.top = '';
+                        headerElement.style.left = '';
+                        headerElement.style.right = '';
+                        headerElement.style.zIndex = '';
+                        headerElement.style.background = '';
+                        console.log('[transitions] Header positioning reset after page transition');
+                    }
+                    
                     const slug = normalizeSlug(next.namespace);
-                    renderHeader(slug, false);
+                    
+                    // Check if there are ongoing animations that might conflict
+                    if (animManager.timelines.length > 0) {
+                        console.log('[transitions] Skipping renderHeader - animations in progress:', animManager.timelines.length);
+                        // Don't call renderHeader during active animations to prevent glitches
+                    } else {
+                        console.log('[transitions] Safe to render header - no active animations');
+                        renderHeader(slug, false);
+                    }
+                    
                     currentLang = getCurrentLang(); // Update language state
                 } catch (error) {
                     console.error("[wordplay] beforeEnter error:", error);

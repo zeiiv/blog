@@ -1,7 +1,7 @@
 ---
 layout: default
-title: "place of"
-title_he: ״מקום של״
+title: "place by"
+title_he: ״מקום מאת״
 ---
 
 

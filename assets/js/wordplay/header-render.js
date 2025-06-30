@@ -1,5 +1,5 @@
 import gsap, { barba } from "./vendor.js";
-import { SELECTORS, EVENTS, STORAGE_KEYS, CLASSNAMES, BREAKPOINTS, ANIM } from "./config.js";
+import { SELECTORS, EVENTS, STORAGE_KEYS, CLASSNAMES, BREAKPOINTS } from "./config.js";
 import { saveOrder, blockInteractions, unblockInteractions } from "./dom-helpers.js";
 import { animatePlaceFlip, animateHeaderFlip, collapsePile, expandPile, animateHoverIn, animateHoverOut } from "./animations.js";
 import { animManager } from "./anim-manager.js";
@@ -174,6 +174,7 @@ export const initHeaderInteractions = () => {
         const slug = link.dataset.id;
         if (slug === getPinnedSlug()) return;   // no‑op if already pinned
         
+        
         // Prevent rapid clicks and check for ongoing animations
         if (onPileClick.lastClick && Date.now() - onPileClick.lastClick < 800) {
             console.log('[header-render] Ignoring rapid click');
@@ -231,34 +232,45 @@ export const initHeaderInteractions = () => {
             getToElement: () => pinnedZone.querySelector(SELECTORS.wordItem),
             domChangeCallback: () => renderHeader(slug, false),
             navigationCallback: () => {
-                // New approach: Immediate barba navigation with persistent header animation
-                // Header animations run independently across page transitions
-                console.log('[header-render] Starting immediate barba navigation with persistent header animation');
+                // Coordinated approach: Navigation starts during animation for visual overlap
+                console.log('[header-render] Starting coordinated navigation during animation');
                 
-                // Make header position: fixed so it persists across page changes
-                const headerElement = document.querySelector(SELECTORS.header);
-                if (headerElement) {
-                    headerElement.style.position = 'fixed';
-                    headerElement.style.top = '0';
-                    headerElement.style.left = '0';
-                    headerElement.style.right = '0';
-                    headerElement.style.zIndex = '9999';
-                    headerElement.style.background = 'inherit';
-                    console.log('[header-render] Header made persistent across page transitions');
-                }
+                // Add safety flag to prevent rapid navigation
+                sessionStorage.setItem('wordplay-navigating', Date.now().toString());
                 
-                // Start barba navigation immediately - header animation continues independently
                 if (barba && typeof barba.go === 'function') {
                     try {
-                        console.log('[header-render] Starting barba navigation immediately');
+                        console.log('[header-render] Barba navigation starting');
+                        
+                        // Enhanced error handling
                         barba.go(link.href);
+                        
+                        // Safety timeout in case barba hangs
+                        setTimeout(() => {
+                            // More accurate check for navigation success
+                            const currentPath = window.location.pathname;
+                            const targetPath = new URL(link.href, window.location.origin).pathname;
+                            if (currentPath !== targetPath) {
+                                console.warn('[header-render] Barba navigation may not have completed:', {
+                                    current: currentPath,
+                                    target: targetPath
+                                });
+                            }
+                        }, 2000); // Reduced timeout
+                        
                     } catch (error) {
-                        console.error('[header-render] Barba failed, using fallback:', error);
-                        window.location.href = link.href;
+                        console.error('[header-render] Barba failed, using fallback navigation:', error);
+                        // Only use fallback if the animation has a chance to establish
+                        setTimeout(() => {
+                            window.location.href = link.href;
+                        }, 200);
                     }
                 } else {
                     console.warn('[header-render] Barba not available, using direct navigation');
-                    window.location.href = link.href;
+                    // Delay direct navigation to let animation establish
+                    setTimeout(() => {
+                        window.location.href = link.href;
+                    }, 200);
                 }
             },
             blockElements: [header, pileZone, pinnedZone, placeZone, langToggle]
@@ -282,9 +294,41 @@ export const initHeaderInteractions = () => {
             console.log('[header-render] Saving pinned slug for pile ordering:', prevPinnedSlug);
         }
         
-        console.log('[header-render] Dispatching PLACE_CLICK event');
-        placeZone.dispatchEvent(new Event(EVENTS.PLACE_CLICK));
-        // renderHeader will be called by the place click animation
+        // Check if we're already on homepage
+        if (window.location.pathname === '/') {
+            console.log('[header-render] Already on homepage, just animate header');
+            placeZone.dispatchEvent(new Event(EVENTS.PLACE_CLICK));
+        } else {
+            console.log('[header-render] Navigating to homepage with animation');
+            placeZone.dispatchEvent(new Event(EVENTS.PLACE_CLICK));
+            
+            // Navigate to homepage simultaneously with animation (coordinate timing)
+            setTimeout(() => {
+                // Add CSS class to persist animation across page change
+                const headerElement = document.querySelector(SELECTORS.header);
+                if (headerElement) {
+                    headerElement.classList.add('wordplay-animating');
+                    console.log('[header-render] Added wordplay-animating class for place click persistence');
+                }
+                
+                // Set navigation flag BEFORE starting navigation
+                sessionStorage.setItem('wordplay-navigating', Date.now().toString());
+                console.log('[header-render] Set navigation flag for place click');
+                
+                if (barba && typeof barba.go === 'function') {
+                    try {
+                        console.log('[header-render] Navigating to homepage via barba (coordinated with animation)');
+                        barba.go('/');
+                    } catch (error) {
+                        console.error('[header-render] Barba failed, using fallback:', error);
+                        window.location.href = '/';
+                    }
+                } else {
+                    console.warn('[header-render] Barba not available, using direct navigation');
+                    window.location.href = '/';
+                }
+            }, 50); // Faster timing for better coordination
+        }
     };
 
     const onPinnedClick = e => {

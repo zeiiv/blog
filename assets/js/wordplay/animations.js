@@ -413,6 +413,76 @@ export function animateHoverOut(item, isPileZone) {
   })(value);
 }
 
+/**
+ * Animates language toggle button during language switch
+ * param {HTMLElement} langToggle
+ */
+export function animateLanguageToggle(langToggle) {
+  if (!langToggle) return;
+  
+  console.log('[animations] Language toggle animation started');
+  
+  return gsap.to(langToggle, {
+    scale: 1.2,
+    duration: 0.15,
+    ease: "back.out(1.7)",
+    yoyo: true,
+    repeat: 1,
+    onComplete: function() {
+      console.log('[animations] Language toggle animation completed');
+    }
+  });
+}
+
+/**
+ * Animates all header elements during language direction change (RTL ↔ LTR)
+ * Captures positions before language change, applies change, then animates to new positions
+ * @param {Function} applyLanguageCallback - Function that changes language and re-renders header
+ * @returns {Timeline} GSAP timeline
+ */
+export function animateLanguageDirectionChange(applyLanguageCallback) {
+  console.log('[animations] Language direction change animation started');
+  
+  // Get all header elements that will be affected by direction change
+  const placeZone = document.querySelector(SELECTORS.placeZone);
+  const pinnedZone = document.querySelector(SELECTORS.pinnedZone);
+  const pileZone = document.querySelector(SELECTORS.pileZone);
+  const langToggle = document.querySelector(SELECTORS.langToggle);
+  
+  const allHeaderElements = [
+    placeZone,
+    ...Array.from(pinnedZone.children),
+    ...Array.from(pileZone.children),
+    langToggle
+  ].filter(Boolean);
+  
+  console.log('[animations] Capturing', allHeaderElements.length, 'header elements for direction change');
+  
+  // Capture initial state with Flip
+  const flipState = Flip.getState(allHeaderElements);
+  
+  // Apply language change (this changes direction and re-renders header)
+  applyLanguageCallback();
+  
+  // Animate from old positions to new positions
+  const flipAnimation = Flip.from(flipState, {
+    duration: ANIM.getDuration('header'),
+    ease: ANIM.eases.flat,
+    onStart: function() {
+      console.log('[animations] Language direction flip animation started');
+    },
+    onComplete: function() {
+      console.log('[animations] Language direction flip animation completed');
+    }
+  });
+  
+  // Wrap in a timeline to ensure proper event handling for anim-manager
+  const tl = gsap.timeline();
+  tl.add(flipAnimation);
+  
+  return tl;
+}
+
 
 /**
  * Composite animation for language switch:

@@ -1,8 +1,7 @@
 ---
-layout: single
-title: "place of"
-title_he: ״מקום של״
-no_pagination: true
+layout: default
+title: "place by"
+title_he: ״מקום מאת״
 ---
 # Placeholder Page: Of
 

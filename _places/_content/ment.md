@@ -1,7 +1,7 @@
 ---
 layout: default
 title: "placement"
-title_he: ״מיקום אחר״
+title_he: ״מקום אחד״
 ---
 
 

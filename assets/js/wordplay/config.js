@@ -30,8 +30,8 @@ export const ANIM = {
   durations: { 
     // Page transition timing
     transition: 2.0,        // 100% = 600ms (full page transition)
-    header: 0.83,           // 83.3% = 500ms (header animation)
-    fade: 0.42,             // 41.7% = 250ms
+    header: 0.80,           //  (header animation)
+    fade: 0.20,             // 
     
     // Word animation phases 
     animateToPinned: 1.0,   // 100% = 600ms (full U-shape: descend + slide + ascend)

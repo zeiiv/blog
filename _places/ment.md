@@ -1,8 +1,7 @@
 ---
-layout: single
+layout: default
 title: "placement"
-title_he: ״מיקום אחר״
-no_pagination: true
+title_he: ״מקום אחד״
 ---
 # Placeholder Page: Ment
 

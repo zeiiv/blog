@@ -1,7 +1,7 @@
 ---
 layout: default
 title: "placeless"
-title_he: ״מקום חסר״
+title_he: ״חסר מקום״
 ---
 
 

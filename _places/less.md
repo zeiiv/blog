@@ -1,10 +1,7 @@
 ---
-layout: single
+layout: default
 title: "placeless"
-title_he: ״מקום חסר״
-no_pagination: true
-classes:
-  - wide
+title_he: ״חסר מקום״
 ---
 # Placeholder Page: Less
 

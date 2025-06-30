@@ -23,12 +23,24 @@ export const animManager = {
     if (!tl) return tl;
 
     console.log('[animManager] registerTimeline called');
-    
+
     this.timelines.push(tl);
+    
+    // Store animation state in DOM (persists across context changes)
+    document.documentElement.setAttribute('data-header-animating', 'true');
+    document.documentElement.setAttribute('data-animation-count', this.timelines.length.toString());
+    console.log('[animManager] Set DOM data-header-animating = true');
 
     const cleanup = () => {
       const index = this.timelines.indexOf(tl);
       if (index > -1) this.timelines.splice(index, 1);
+      
+      // Update DOM state when timeline count changes
+      document.documentElement.setAttribute('data-animation-count', this.timelines.length.toString());
+      if (this.timelines.length === 0) {
+        document.documentElement.removeAttribute('data-header-animating');
+        console.log('[animManager] Removed DOM data-header-animating - all animations complete');
+      }
     };
 
     // Chain cleanup with existing callbacks (don't override them)
@@ -40,16 +52,16 @@ export const animManager = {
       hasInterrupt: !!existingOnInterrupt
     });
 
-    tl.eventCallback("onComplete", function() {
-      console.log('[animManager] Timeline completed, calling original callback');
+    tl.eventCallback("onComplete", function () {
+      console.log('[animManager] Timeline completed, cleaning up');
+      cleanup(); // Clean up FIRST to prevent detection as ongoing
       if (existingOnComplete) existingOnComplete();
-      cleanup();
     });
 
-    tl.eventCallback("onInterrupt", function() {
-      console.log('[animManager] Timeline interrupted, calling original callback');
+    tl.eventCallback("onInterrupt", function () {
+      console.log('[animManager] Timeline interrupted, cleaning up');
+      cleanup(); // Clean up FIRST to prevent detection as ongoing
       if (existingOnInterrupt) existingOnInterrupt();
-      cleanup();
     });
 
     console.log('[animManager] registerTimeline completed');
@@ -89,7 +101,7 @@ export const animManager = {
   fullCleanup() {
     this.killAll();
     this.revertAll();
-    
+
     // Clear quickTo caches from all interactive elements
     const allInteractiveElements = [
       ...document.querySelectorAll(SELECTORS.wordItem),
@@ -98,7 +110,7 @@ export const animManager = {
       document.querySelector(SELECTORS.pinnedZone),
       document.querySelector(SELECTORS.langToggle)
     ].filter(Boolean);
-    
+
     clearQuickTweens(allInteractiveElements);
   },
 
@@ -128,13 +140,13 @@ export const animManager = {
       // Include ALL elements that might be affected (pile + pinned + selected elements)
       const pileZone = document.querySelector(SELECTORS.pileZone);
       const pinnedZone = document.querySelector(SELECTORS.pinnedZone);
-      
+
       const allAffectedElements = [
         ...validElements, // The main swap elements
         ...Array.from(pileZone.children), // All pile elements
         ...Array.from(pinnedZone.children) // All pinned elements
       ];
-      
+
       // Remove duplicates by ID
       const uniqueElements = [];
       const seenIds = new Set();
@@ -145,13 +157,13 @@ export const animManager = {
           uniqueElements.push(el);
         }
       });
-      
+
       const originalPositions = uniqueElements.map(el => ({
         element: el,
         id: el.querySelector('a')?.dataset.id,
         rect: el.getBoundingClientRect()
       }));
-      
+
       console.log('[animManager] Captured original positions:', originalPositions.map(p => ({
         id: p.id,
         left: p.rect.left,
@@ -177,37 +189,74 @@ export const animManager = {
 
       // 7. Create and run animation with original positions and final element
       const flipTl = animateSwap(originalPositions, finalElement);
-      
+
       console.log('[animManager] Animation created - duration:', flipTl.duration(), 'totalDuration:', flipTl.totalDuration());
-      
+
       // Store navigation callback and trigger during animation
       flipTl._navigationCallback = navigationCallback;
-      
-      // Trigger navigation partway through the header animation
-      if (navigationCallback) {
-        const navigationDelay = flipTl.duration() * 0.4; // Start navigation at 40% of animation
-        flipTl.call(function() {
-          try {
-            console.log('[animManager] Triggering navigation during header animation (40% complete)');
-            navigationCallback();
-          } catch (error) {
-            console.error('[animManager] Navigation error during animation:', error);
-          }
-        }, [], this, navigationDelay);
-      }
 
-      // Add unblocking to animation completion
-      flipTl.eventCallback("onComplete", function() {
+      // Simultaneous approach: Start navigation immediately for true parallel execution
+      // This ensures both header animation and content transition begin at the same time
+      if (navigationCallback) {
+        console.log('[animManager] Starting simultaneous navigation and header animation');
+        
+        // Add CSS class to persist animation across page change
+        const headerElement = document.querySelector('#wordplay-header');
+        if (headerElement) {
+          headerElement.classList.add('wordplay-animating');
+          console.log('[animManager] Added wordplay-animating class for persistence');
+        }
+        
+        // Start navigation with enough delay for animation to establish properly
+        // Add additional protection against rapid successive clicks
+        const animationCount = animManager.timelines.length;
+        const delayMultiplier = Math.min(animationCount, 3); // Cap at 3x delay
+        const baseDelay = 150;
+        const adaptiveDelay = baseDelay + (delayMultiplier * 50); // Up to 300ms for multiple animations
+        
+        setTimeout(() => {
+          console.log(`[animManager] Starting navigation with adaptive delay: ${adaptiveDelay}ms`);
+          try {
+            // Double-check that animation is still running before navigating
+            const stillAnimating = document.documentElement.hasAttribute('data-header-animating');
+            if (stillAnimating) {
+              console.log('[animManager] Animation confirmed running, proceeding with navigation');
+              navigationCallback();
+            } else {
+              console.warn('[animManager] Animation finished early, skipping navigation');
+            }
+          } catch (error) {
+            console.error('[animManager] Navigation error:', error);
+          }
+        }, adaptiveDelay);
+      }
+      
+      // Handle completion and cleanup
+      flipTl.eventCallback("onComplete", function () {
         console.log('[animManager] Header transition animation completed, unblocking');
         unblockInteractions(blockElements);
+        
+        // Clean up animation persistence class
+        const headerElement = document.querySelector('#wordplay-header');
+        if (headerElement && headerElement.classList.contains('wordplay-animating')) {
+          headerElement.classList.remove('wordplay-animating');
+          console.log('[animManager] Removed wordplay-animating class on completion');
+        }
       });
-      
-      flipTl.eventCallback("onInterrupt", function() {
+
+      flipTl.eventCallback("onInterrupt", function () {
         console.log('[animManager] Header transition animation interrupted, unblocking');
         unblockInteractions(blockElements);
         
+        // Clean up animation persistence class on interrupt
+        const headerElement = document.querySelector('#wordplay-header');
+        if (headerElement && headerElement.classList.contains('wordplay-animating')) {
+          headerElement.classList.remove('wordplay-animating');
+          console.log('[animManager] Removed wordplay-animating class on interrupt');
+        }
+
         // Fallback navigation if animation was interrupted before navigation trigger
-        if (flipTl._navigationCallback && flipTl.progress() < 0.4) {
+        if (flipTl._navigationCallback && flipTl.progress() < 0.33) {
           try {
             console.log('[animManager] Triggering fallback navigation after early interrupt');
             flipTl._navigationCallback();
@@ -216,7 +265,7 @@ export const animManager = {
           }
         }
       });
-      
+
       // Safety net: ensure interactions are always unblocked
       const animationDuration = flipTl.duration();
       if (animationDuration > 0) {
@@ -228,7 +277,7 @@ export const animManager = {
           }
         }, (animationDuration + 1) * 1000); // 1 second buffer
       }
-      
+
       this.registerTimeline(flipTl);
 
     } catch (error) {

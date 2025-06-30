@@ -1,8 +1,7 @@
 ---
-layout: single
-title: "place with"
-title_he: ״מקום עם״
-no_pagination: true
+layout: default
+title: "place together"
+title_he: ״מקום יחד״
 ---
 # Placeholder Page: With
 

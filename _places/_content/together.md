@@ -1,13 +1,13 @@
 ---
 layout: default
-title: "place time"
-title_he: ״מקום זמן״
+title: "place together"
+title_he: ״מקום יחד״
 ---
 
 
-# Placeholder Page: Time
+# Placeholder Page: With
 
-This is a placeholder page for **Time** to test the theme's styling.
+This is a placeholder page for **With** to test the theme's styling.
 
 ## Markdown Elements Test
 

@@ -2,22 +2,18 @@
   en: "place"
   he: "מקום"
 
-- slug: "of"
-  en: "of"
-  he: "של"
+- slug: "by"
+  en: "by"
+  he: "מאת"
 
-- slug: "with"
-  en: "with"
-  he: "עם"
+- slug: "together"
+  en: "together"
+  he: "יחד"
 
 - slug: "less"
   en: "less"
   he: "חסר"
 
-- slug: "time"
-  en: "time"
-  he: "שעה"
-
 - slug: "ment"
   en: "ment"
-  he: "אחר"
+  he: "אחד"

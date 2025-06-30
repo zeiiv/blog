@@ -1,21 +1,20 @@
-import gsap from "./vendor/gsap.js";
-import { Flip } from "./vendor/gsap.js";
-import barba from "./vendor/barba.js";
-import { SELECTORS, BREAKPOINTS, ANIM, EVENTS } from "./config.js";
-import { normalizeSlug, unblockInteractions } from "./dom-helpers.js";
+import { barba } from "./vendor.js";
+import { SELECTORS, ANIM } from "./config.js";
+import { normalizeSlug, unblockInteractions, getCurrentPinnedSlug, setLastPinnedSlug } from "./dom-helpers.js";
+import { animateLeavePage, animateEnterPage } from "./animations.js";
 import { animManager } from "./anim-manager.js";
-import { onPileClick, getPrevPinnedSlug, getPinnedSlug } from "./header-render.js";
 
-export default function initTransitions({ renderHeader, getCurrentLang }) {
+export const initPageTransitions = ({ renderHeader, getCurrentLang }) => {
 
     const wrapper = document.querySelector(SELECTORS.wrapper);
-    const pileZone = document.querySelector(SELECTORS.pileZone);
+
+    let currentLang = getCurrentLang();
 
     // reset click guard and cleanup
     const resetTransitionGuard = () => {
         // clear transition guard and re-enable interactions
-        unblockInteractions();
-        pileZone.addEventListener("click", onPileClick);
+        unblockInteractions([]);
+        document.dispatchEvent(new CustomEvent("wordplay:restorePileClick"));
     };
 
     // Adjust wrapper height on window resize during transition
@@ -32,59 +31,86 @@ export default function initTransitions({ renderHeader, getCurrentLang }) {
             sync: false,
             // fade out old page and lock footer
             leave({ current }) {
-                prevPinnedSlug = getPinnedSlug();                   // remember old pin
-                wrapper.style.minHeight = `${current.container.offsetHeight}px`;
-                // Listen for window resize to maintain wrapper height
-                window.addEventListener('resize', onResize);
-                // Determine slide direction based on language: en → right, he → left
-                const dir = getDirOffset(currentLang);
-                // Capture header state for FLIP if needed (before fade)
-                // const flipState = Flip.getState([...placeZone.children, ...pinnedZone.children, ...pileZone.children]);
-                return gsap.timeline()
-                    .to(current.container, {
-                        autoAlpha: 0,
-                        x: dir,
-                        duration: FADE_DURATION,
-                        ease: 'power1.inOut'
-                    }, 0)
-                    .then(() => {
-                        wrapper.style.minHeight = "";  // clear height lock
-                    })
-                    .catch(err => {
-                        console.error("[wordplay] leave animation error:", err);
-                    })
-                    .finally(() => {
-                        // Always remove resize listener to prevent memory leaks
-                        window.removeEventListener('resize', onResize);
+                try {
+                    // Don't kill animations if they're header transitions - let them complete
+                    console.log('[transitions] Leave hook called, preserving header animations');
+                    
+                    // But clean up any stuck elements as a safety measure
+                    const allWordItems = document.querySelectorAll('.word-item');
+                    allWordItems.forEach(item => {
+                        // Clear any stuck transforms without interrupting ongoing animations
+                        const transform = window.getComputedStyle(item).transform;
+                        if (transform !== 'none' && transform !== 'matrix(1, 0, 0, 1, 0, 0)') {
+                            console.log('[transitions] Found potentially stuck element, will monitor:', item.querySelector('a')?.dataset.id);
+                        }
                     });
+                    
+                    setLastPinnedSlug(getCurrentPinnedSlug());
+                    currentLang = getCurrentLang(); // Update current language
+
+                    if (wrapper && current.container) {
+                        wrapper.style.minHeight = `${current.container.offsetHeight}px`;
+                    }
+
+                    // Listen for window resize to maintain wrapper height
+                    window.addEventListener('resize', onResize);
+
+                    // Determine slide direction based on language
+                    return animateLeavePage(current.container)
+                        .then(() => {
+                            if (wrapper) wrapper.style.minHeight = "";
+                        })
+                        .catch(err => {
+                            console.error("[wordplay] leave animation error:", err);
+                            if (wrapper) wrapper.style.minHeight = "";
+                        })
+                        .finally(() => {
+                            window.removeEventListener('resize', onResize);
+                        });
+                } catch (error) {
+                    console.error("[wordplay] leave error:", error);
+                    return Promise.resolve();
+                }
             },
 
-            beforeEnter({ next }) { // prepare incoming page
-                window.scrollTo(0, 0);
-                const slug = normalizeSlug(next.namespace); // normalize slug
-                renderHeader(slug); // always sync header based on slug
-                // Determine slide direction for incoming content (reverse of leave)
-                const dir = getDirOffset(currentLang);
-                gsap.set(next.container, { autoAlpha: 0, x: dir, visibility: "visible" });
+            beforeEnter({ next }) {
+                try {
+                    window.scrollTo(0, 0);
+                    const slug = normalizeSlug(next.namespace);
+                    renderHeader(slug, false);
+                    currentLang = getCurrentLang(); // Update language state
+                } catch (error) {
+                    console.error("[wordplay] beforeEnter error:", error);
+                }
             },
 
             // fade in new page
             enter({ next }) {
-                // Slide- and fade-in incoming content
-                const dir = getDirOffset(currentLang);
-                return new Promise(resolve => {
-                    // Start fade-in of new page content
-                    gsap.to(next.container, {
-                        autoAlpha: 1,
-                        x: 0,
-                        duration: FADE_DURATION,
-                        ease: 'power1.inOut'
-                    });
-                    // Wait for both header flip and content transition to finish before re-enabling interactions
-                    gsap.delayedCall(HEADER_ANIM_DURATION, () => {
+                return new Promise((resolve, reject) => {
+                    try {
+                        if (!next.container) {
+                            resolve();
+                            return;
+                        }
+                        animateEnterPage(
+                            next.container,
+                            () => {
+                                // Wait for complete transition, then resolve
+                                setTimeout(() => {
+                                    resetTransitionGuard();
+                                    resolve();
+                                }, ANIM.getDurationMs('transition'));
+                            },
+                            () => {
+                                resetTransitionGuard();
+                                resolve();
+                            }
+                        );
+                    } catch (error) {
+                        console.error("[wordplay] enter error:", error);
                         resetTransitionGuard();
-                        resolve();
-                    });
+                        reject(error);
+                    }
                 });
             },
         }],
@@ -96,7 +122,7 @@ export default function initTransitions({ renderHeader, getCurrentLang }) {
         if (trigger === "popstate") {
             // normalize namespace to slug
             const slug = normalizeSlug(next.namespace);
-            renderHeader(slug)
+            renderHeader(slug, false)
         }
         resetTransitionGuard()
     });

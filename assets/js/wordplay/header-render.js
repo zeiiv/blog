@@ -1,8 +1,8 @@
-import { SELECTORS, EVENTS, ANIM, STORAGE_KEYS, BREAKPOINTS } from "./config.js";
-import { blockInteractions, safeUnblock, getQuickTween, saveOrder } from "./dom-helpers.js";
-import { animateSwap, animatePlaceFlip } from "./animations.js";
-import { safeUnblock }                  from "./dom-helpers.js";
-import { animManager }                  from "./anim-manager.js";
+import gsap, { barba } from "./vendor.js";
+import { SELECTORS, EVENTS, STORAGE_KEYS, CLASSNAMES, BREAKPOINTS } from "./config.js";
+import { saveOrder, blockInteractions, unblockInteractions } from "./dom-helpers.js";
+import { animatePlaceFlip, animateHeaderFlip, collapsePile, expandPile, animateHoverIn, animateHoverOut } from "./animations.js";
+import { animManager } from "./anim-manager.js";
 
 // DOM references
 const header = document.querySelector(SELECTORS.header);
@@ -17,7 +17,17 @@ export const getPrevPinnedSlug = () => prevPinnedSlug;
 export const setPrevPinnedSlug = slug => { prevPinnedSlug = slug; };
 
 // rebuild header zones based on slug
+let lastRenderCall = { slug: null, timestamp: 0 };
 export const renderHeader = (slug, animateFlip = true) => { // rebuild header zones
+    console.log('[renderHeader] Called with:', { slug, animateFlip });
+    
+    // Prevent duplicate calls within 100ms
+    const now = Date.now();
+    if (lastRenderCall.slug === slug && (now - lastRenderCall.timestamp) < 100) {
+        console.log('[renderHeader] Ignoring duplicate call');
+        return;
+    }
+    lastRenderCall = { slug, timestamp: now };
 
     // build list of {id, template} once
     const fullWordList = Array.from(pileZone.children)
@@ -30,7 +40,7 @@ export const renderHeader = (slug, animateFlip = true) => { // rebuild header zo
     // Flag to skip Flip animation on initial load
     let isInitialRender = true;
     // Capture current word positions for Flip animation
-    const flipState = Flip.getState([...placeZone.children, ...pinnedZone.children, ...pileZone.children]);
+    const flipElements = [...placeZone.children, ...pinnedZone.children, ...pileZone.children];
     // list of valid slugs for quick lookup
     const allIds = fullWordList.map(item => item.id);
     // Determine effective slug: exact match, parent for deep-link, or 404
@@ -65,6 +75,13 @@ export const renderHeader = (slug, animateFlip = true) => { // rebuild header zo
     const pinnedFrag = document.createDocumentFragment();
     const pileFrag = document.createDocumentFragment();
 
+    console.log('[renderHeader] Element distribution:', {
+        slug: effectiveSlug,
+        workingListOrder: workingList.map(item => item.id),
+        pinnedItems: workingList.filter(item => item.id === effectiveSlug).map(item => item.id),
+        pileItems: workingList.filter(item => item.id !== effectiveSlug).map(item => item.id)
+    });
+
     workingList.forEach(({ id, element }) => {
         if (id === effectiveSlug) pinnedFrag.appendChild(element);
         else pileFrag.appendChild(element);
@@ -74,6 +91,15 @@ export const renderHeader = (slug, animateFlip = true) => { // rebuild header zo
     pileZone.innerHTML = "";
     pinnedZone.appendChild(pinnedFrag);
     pileZone.appendChild(pileFrag);
+    
+    // Debug zone placement
+    console.log('[renderHeader] Final DOM structure:', {
+        placeZoneChildren: placeZone.children.length,
+        pinnedZoneChildren: pinnedZone.children.length,
+        pileZoneChildren: pileZone.children.length,
+        pinnedZoneItems: Array.from(pinnedZone.children).map(el => el.querySelector('a')?.dataset.id),
+        pileZoneItems: Array.from(pileZone.children).map(el => el.querySelector('a')?.dataset.id)
+    });
     // Persist current pile ordering to localStorage
     try {
         const orderToSave = workingList.map(item => item.id);
@@ -88,11 +114,14 @@ export const renderHeader = (slug, animateFlip = true) => { // rebuild header zo
     if (isInitialRender) {
         isInitialRender = false;
     } else if (animateFlip) {
-        Flip.from(flipState, { duration: ANIM.durations.header, ease: ANIM.eases.flat });
+        const flipAnimation = animateHeaderFlip(flipElements);
+        if (flipAnimation) {
+            animManager.registerTimeline(flipAnimation);
+        }
     }
 };
 
-export const initHeaderInteractions = renderHeaderFn => {
+export const initHeaderInteractions = () => {
 
     const pileZone = document.querySelector(SELECTORS.pileZone);
 
@@ -105,20 +134,15 @@ export const initHeaderInteractions = renderHeaderFn => {
             : window.matchMedia(BREAKPOINTS.mobile).matches; // fallback
 
     mm.add(BREAKPOINTS.mobile, () => {
-        function collapse() {
-            gsap.to(pileZone, {
-                height: 0,
-                duration: ANIM.durations.clickRipple,
-                ease: ANIM.eases.flat
-            });
-        }
-        function expand() {
-            gsap.to(pileZone, {
-                height: pileZone.scrollHeight,
-                duration: ANIM.durations.clickRipple,
-                ease: ANIM.eases.bounce
-            });
-        }
+        const collapse = () => {
+            const tl = collapsePile(pileZone);
+            if (tl) animManager.registerTimeline(tl);
+        };
+        const expand = () => {
+            const tl = expandPile(pileZone);
+            if (tl) animManager.registerTimeline(tl);
+        };
+        
         pileZone.addEventListener(EVENTS.PILE_SHRINK, collapse);
         pileZone.addEventListener(EVENTS.PILE_EXPAND, expand);
         return () => {
@@ -149,28 +173,51 @@ export const initHeaderInteractions = renderHeaderFn => {
 
         const slug = link.dataset.id;
         if (slug === getPinnedSlug()) return;   // no‑op if already pinned
+        
+        // Prevent rapid clicks and check for ongoing animations
+        if (onPileClick.lastClick && Date.now() - onPileClick.lastClick < 800) {
+            console.log('[header-render] Ignoring rapid click');
+            return;
+        }
+        
+        // Check if there are ongoing animations
+        if (animManager.timelines.length > 0) {
+            console.log('[header-render] Ignoring click - animations in progress:', animManager.timelines.length);
+            return;
+        }
+        
+        onPileClick.lastClick = Date.now();
 
         // ---- PREP ----------------------------------------------------------------
+        // Get current word list from DOM
+        const fullWordList = Array.from(pileZone.children)
+            .concat(Array.from(pinnedZone.children))
+            .map(el => {
+                const link = el.querySelector(SELECTORS.wordLink);
+                return { id: link.dataset.id, element: el };
+            });
+        
         // Currently‑pinned element (may be null on home page)
         const oldEl = pinnedZone.querySelector(".word-item");
         // Word element that was just clicked in the pile
-        const selectedEl = fullWordList.find(item => item.id === slug).element;
+        const selectedEl = fullWordList.find(item => item.id === slug)?.element;
+        
+        console.log('[header-render] Pile click elements:', { 
+            slug, 
+            selectedEl: !!selectedEl, 
+            oldEl: !!oldEl,
+            fromElements: [selectedEl, oldEl].filter(Boolean).length
+        });
+        
+        // Set the current pinned slug as previous for future ordering
+        const currentPinned = getPinnedSlug();
+        if (currentPinned && currentPinned !== slug) {
+            prevPinnedSlug = currentPinned;
+        }
 
-        // Capture Flip state *before* any DOM mutations
-        const flipState = Flip.getState([selectedEl, oldEl].filter(Boolean));
 
-        // ---- MUTATE DOM -----------------------------------------------------------
-        // Re‑order header zones, but suppress its internal Flip
-        renderHeader(slug, false);
-
-        // New pinned element (now sitting in .zone‑pinned)
-        const newEl = pinnedZone.querySelector(".word-item");
-        const dropDist = newEl.offsetHeight * ANIM.values.dipFactor;
-        const clickDur = ANIM.durations.clickRipple;
-
-        // Block user interaction during the sequence
-        const blockEls = [header, pileZone, pinnedZone, placeZone, langToggle];
-        blockInteractions(blockEls);
+        // ---- ANIMATION PREPARATION -----------------------------------------------
+        // animateHeaderTransition will handle DOM changes and blocking
 
         // Shrink the pile immediately so it isn’t hit‑tested during animation
         if (isMobileViewport()) {
@@ -178,22 +225,80 @@ export const initHeaderInteractions = renderHeaderFn => {
         }
 
         // ---- RUN ANIMATION --------------------------------------------------------
-        const flipTl    = animateSwap(flipState, newEl, [header,pileZone,pinnedZone,placeZone,langToggle], isMobileViewport);
-        safeUnblock(flipTl, [header,pileZone,pinnedZone,placeZone,langToggle]);
-        animManager.registerTimeline(flipTl);
-
-        // Begin page‑transition through Barba
-        barba.go(link.href);
+        // High-level orchestration: handles state capture, DOM changes, animation, and navigation
+        animManager.animateHeaderTransition({
+            fromElements: [selectedEl, oldEl],
+            getToElement: () => pinnedZone.querySelector(SELECTORS.wordItem),
+            domChangeCallback: () => renderHeader(slug, false),
+            navigationCallback: () => {
+                try {
+                    console.log('[header-render] Attempting barba navigation to:', link.href);
+                    console.log('[header-render] Barba state check:', {
+                        barbaExists: !!barba,
+                        barbaGoExists: !!(barba && barba.go),
+                        barbaGoIsFunction: !!(barba && typeof barba.go === 'function'),
+                        barbaInitialized: !!(barba && barba.initialized),
+                        barbaRunning: !!(barba && barba.running)
+                    });
+                    
+                    // More comprehensive barba readiness check
+                    if (barba && typeof barba.go === 'function' && !barba.running) {
+                        console.log('[header-render] Barba is ready and not running, attempting navigation');
+                        return barba.go(link.href);
+                    } else if (barba && barba.running) {
+                        console.warn('[header-render] Barba is running another transition, delaying navigation');
+                        // Wait for current transition to finish
+                        setTimeout(() => {
+                            if (typeof barba.go === 'function') {
+                                barba.go(link.href);
+                            } else {
+                                window.location.href = link.href;
+                            }
+                        }, 100);
+                        return;
+                    } else {
+                        console.warn('[header-render] Barba not available or not ready, using fallback navigation');
+                        window.location.href = link.href;
+                    }
+                } catch (error) {
+                    console.error('[header-render] Barba navigation failed:', error);
+                    console.error('[header-render] Error details:', {
+                        message: error.message,
+                        stack: error.stack,
+                        barbaState: barba ? {
+                            initialized: barba.initialized,
+                            running: barba.running,
+                            hasGo: typeof barba.go
+                        } : 'barba not available'
+                    });
+                    // Fallback to regular navigation if barba fails
+                    window.location.href = link.href;
+                }
+            },
+            blockElements: [header, pileZone, pinnedZone, placeZone, langToggle]
+        });
     };
 
     // Handle clicking the "place" static word
     const onPlaceClick = e => {
         if (bodyClasses.contains(CLASSNAMES.transitioning)) return;
+        
+        console.log('[header-render] Place click detected - current URL:', window.location.pathname);
+        
         e.preventDefault();         // prevent full reload
-        prevPinnedSlug = null;      // clear any pinned slug
-        blockInteractions([header, pileZone, pinnedZone, placeZone, langToggle]);
+        e.stopPropagation();        // prevent event bubbling
+        e.stopImmediatePropagation(); // prevent other handlers
+        
+        // Save the currently pinned slug so it goes to front of pile
+        const currentPinned = getPinnedSlug();
+        if (currentPinned) {
+            prevPinnedSlug = currentPinned;
+            console.log('[header-render] Saving pinned slug for pile ordering:', prevPinnedSlug);
+        }
+        
+        console.log('[header-render] Dispatching PLACE_CLICK event');
         placeZone.dispatchEvent(new Event(EVENTS.PLACE_CLICK));
-        renderHeader('place');
+        // renderHeader will be called by the place click animation
     };
 
     const onPinnedClick = e => {
@@ -210,41 +315,16 @@ export const initHeaderInteractions = renderHeaderFn => {
         const item = e.target.closest(".word-item");
         if (!item) return;
 
-        // Determine zone
-        if (item.closest(SELECTORS.pileZone)) {
-            // pile: vertical nudge
-            getQuickTween(item, "y", {
-                duration: ANIM.durations.hover,
-                ease: ANIM.eases.bounce,
-                overwrite: "auto"
-            })(-ANIM.values.hoverNudge);
-        } else {
-            // pinned or place: scale up
-            getQuickTween(item, "scale", {
-                duration: ANIM.durations.hover,
-                ease: ANIM.eases.bounce,
-                overwrite: "auto"
-            })(1.2);
-        }
+        const isPileZone = !!item.closest(SELECTORS.pileZone);
+        animateHoverIn(item, isPileZone);
     });
 
     header.addEventListener("mouseout", e => {
         const item = e.target.closest(".word-item");
         if (!item) return;
 
-        if (item.closest(SELECTORS.pileZone)) {
-            getQuickTween(item, "y", {
-                duration: ANIM.durations.hover,
-                ease: ANIM.eases.bounce,
-                overwrite: "auto"
-            })(0);
-        } else {
-            getQuickTween(item, "scale", {
-                duration: ANIM.durations.hover,
-                ease: ANIM.eases.bounce,
-                overwrite: "auto"
-            })(1);
-        }
+        const isPileZone = !!item.closest(SELECTORS.pileZone);
+        animateHoverOut(item, isPileZone);
     });
 
     pileZone.addEventListener("click", onPileClick);
@@ -252,13 +332,52 @@ export const initHeaderInteractions = renderHeaderFn => {
     placeZone.addEventListener("click", onPlaceClick);
 
     // Persistent place‐click Flip
-    animManager.registerPersistent(
-        gsap.context(() => {
+    console.log('[header-render] Setting up PLACE_CLICK event listener');
+    animManager.registerContext(placeZone, () => {
+        console.log('[header-render] Registering PLACE_CLICK event listener on:', placeZone);
         placeZone.addEventListener(EVENTS.PLACE_CLICK, () => {
-        const tl = animatePlaceFlip(pileZone.children);
-        safeUnblock(tl, [header,pileZone,pinnedZone,placeZone,langToggle]);
+            console.log('[header-render] PLACE_CLICK event fired');
+            
+            // Block interactions for place click
+            const blockEls = [header, pileZone, pinnedZone, placeZone, langToggle];
+            blockInteractions(blockEls);
+            
+            // Capture the pinned element BEFORE moving it
+            const pinnedElement = pinnedZone.querySelector('.word-item');
+            const pinnedElementData = pinnedElement ? {
+                element: pinnedElement,
+                id: pinnedElement.querySelector('a')?.dataset.id,
+                rect: pinnedElement.getBoundingClientRect()
+            } : null;
+            
+            console.log('[header-render] Captured pinned element before DOM change:', pinnedElementData?.id);
+            
+            // Move pinned item back to pile
+            console.log('[header-render] Calling renderHeader from PLACE_CLICK handler');
+            renderHeader('place', false);
+            
+            // Create animation with the captured data and current pile elements
+            const tl = animatePlaceFlip(pileZone.children, pinnedElementData);
+            
+            // Add unblocking to completion
+            tl.eventCallback("onComplete", () => {
+                console.log('[header-render] Place flip completed, unblocking');
+                unblockInteractions(blockEls);
+            });
+            
+            tl.eventCallback("onInterrupt", () => {
+                console.log('[header-render] Place flip interrupted, unblocking');
+                unblockInteractions(blockEls);
+            });
+            
+            console.log('[header-render] Place flip timeline created:', {
+                duration: tl.duration(),
+                totalDuration: tl.totalDuration(),
+                progress: tl.progress()
+            });
+            
+            animManager.registerTimeline(tl);
+        });
     });
-  }, placeZone)
-);
 
 };

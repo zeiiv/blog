@@ -116,6 +116,7 @@ export const initLanguageSwitcher = renderHeader => {
                     console.log('[language] Direction animation completed, cleaning up');
                     if (headerElement && headerElement.classList.contains('wordplay-animating')) {
                         headerElement.classList.remove('wordplay-animating');
+                        animManager.fullCleanup();
                         console.log('[language] Removed wordplay-animating class on completion');
                     }
                 });

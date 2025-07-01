@@ -1,6 +1,6 @@
 import gsap, { Flip } from "./vendor.js";
 import { SELECTORS, ANIM } from "./config.js";
-import { getQuickTween } from "./dom-helpers.js";
+import { getQuickTween, clearQuickTweens } from "./dom-helpers.js";
 
 /**
  * Collapse pile zone with animation.
@@ -120,14 +120,40 @@ export function animateSwap(originalPositions, toElement) {
         // Main toPinned animation (3-phase: descend → slide → ascend)
         const dropDist = currentElement.offsetHeight * ANIM.values.dipFactor;
         
-        // Start at original position
-        gsap.set(currentElement, { x: deltaX, y: deltaY });
+        // Clean up animations and quickTo hover cache before starting coordination
+        console.log('[animations] Pre-animation cleanup for toPinned element:', currentId);
+        const currentTransform = getComputedStyle(currentElement).transform;
+        console.log('[animations] Current transform before cleanup:', currentId, currentTransform);
+        
+        // Use native quickTween cleanup to properly reset hover states
+        clearQuickTweens([currentElement]);
+        console.log('[animations] Cleared quickTween cache for:', currentId);
+        
+        // Kill transform animations after clearing quickTo cache
+        gsap.killTweensOf(currentElement, "x,y,scale,scaleX,scaleY");
+        
+        // Reset transforms and start at original position
+        gsap.set(currentElement, { x: deltaX, y: deltaY, scale: 1 });
+        
+        const finalTransform = getComputedStyle(currentElement).transform;
+        console.log('[animations] Final transform after position set:', currentId, finalTransform);
+        
+        console.log('[animations] toPinned animation setup:', {
+          currentId,
+          startX: deltaX,
+          startY: deltaY,
+          dropDist,
+          descendTo: deltaY + dropDist,
+          finalX: 0,
+          finalY: 0
+        });
         
         // Phase 1: Descend from original position
         masterTl.to(currentElement, {
           y: deltaY + dropDist,
           duration: ANIM.getDuration('pinnedDescend'),
           ease: ANIM.eases.smooth,
+          overwrite: false,
           onStart: function() { console.log('[animations] toPinned phase 1 (descend) started for:', currentId); },
           onComplete: function() { console.log('[animations] toPinned phase 1 (descend) completed for:', currentId); }
         }, 0);
@@ -137,25 +163,42 @@ export function animateSwap(originalPositions, toElement) {
           x: 0,
           duration: ANIM.getDuration('pinnedSlide'),
           ease: ANIM.eases.smooth,
+          overwrite: false,
           onStart: function() { console.log('[animations] toPinned phase 2 (slide) started for:', currentId); },
           onComplete: function() { console.log('[animations] toPinned phase 2 (slide) completed for:', currentId); }
-        }, ANIM.getDuration('pinnedDescend')); // Start at exact time when descend completes
+        }, ANIM.getDuration('pinnedDescend')); // Start when descend completes
 
         // Phase 3: Ascend to final position
         masterTl.to(currentElement, {
           y: 0,
           duration: ANIM.getDuration('pinnedAscend'),
           ease: ANIM.eases.bounce,
+          overwrite: false,
           onStart: function() { console.log('[animations] toPinned phase 3 (ascend) started for:', currentId); },
           onComplete: function() { console.log('[animations] toPinned phase 3 (ascend) completed for:', currentId); }
-        }, ANIM.getDuration('pinnedDescend') + ANIM.getDuration('pinnedSlide')); // Start at exact time when slide completes
+        }, ANIM.getDuration('pinnedDescend') + ANIM.getDuration('pinnedSlide')); // Start when slide completes
         
         console.log('[animations] Added toPinned 3-phase animation for:', currentId);
       } else {
         // toPile or pile reorder animation (simple slide)
         if (Math.abs(deltaX) > 1 || Math.abs(deltaY) > 1) {
-          // Real movement animation
-          gsap.set(currentElement, { x: deltaX, y: deltaY });
+          // Clean up animations and quickTo hover cache before starting coordination
+          console.log('[animations] Pre-animation cleanup for toPile element:', currentId);
+          const currentTransform = getComputedStyle(currentElement).transform;
+          console.log('[animations] Current transform before cleanup:', currentId, currentTransform);
+          
+          // Use native quickTween cleanup to properly reset hover states
+          clearQuickTweens([currentElement]);
+          console.log('[animations] Cleared quickTween cache for:', currentId);
+          
+          // Kill transform animations after clearing quickTo cache
+          gsap.killTweensOf(currentElement, "x,y,scale,scaleX,scaleY");
+          
+          // Reset transforms and start at original position
+          gsap.set(currentElement, { x: deltaX, y: deltaY, scale: 1 });
+          
+          const finalTransform = getComputedStyle(currentElement).transform;
+          console.log('[animations] Final transform after position set:', currentId, finalTransform);
           
           masterTl.to(currentElement, {
             x: 0,
@@ -168,8 +211,23 @@ export function animateSwap(originalPositions, toElement) {
           
           console.log('[animations] Added real movement animation for:', currentId);
         } else {
-          // Forced pile reorder animation (subtle effect even with no position change)
-          gsap.set(currentElement, { x: -10, scale: 0.98 });
+          // Clean up animations and quickTo hover cache before starting coordination
+          console.log('[animations] Pre-animation cleanup for forced pile element:', currentId);
+          const currentTransform = getComputedStyle(currentElement).transform;
+          console.log('[animations] Current transform before cleanup:', currentId, currentTransform);
+          
+          // Use native quickTween cleanup to properly reset hover states
+          clearQuickTweens([currentElement]);
+          console.log('[animations] Cleared quickTween cache for:', currentId);
+          
+          // Kill transform animations after clearing quickTo cache
+          gsap.killTweensOf(currentElement, "x,y,scale,scaleX,scaleY");
+          
+          // Reset transforms and apply forced animation values
+          gsap.set(currentElement, { x: -10, y: 0, scale: 0.98 });
+          
+          const finalTransform = getComputedStyle(currentElement).transform;
+          console.log('[animations] Final transform after forced animation set:', currentId, finalTransform);
           
           masterTl.to(currentElement, {
             x: 0,
@@ -188,9 +246,26 @@ export function animateSwap(originalPositions, toElement) {
     }
   });
   
+  // Note: Progress tracking handled by global coordinator now
+
   // Add safeguards to ensure animation always completes
   masterTl.eventCallback("onComplete", function() {
     console.log('[animations] animateSwap completed successfully');
+    
+    // Clear all transforms and reset quickTo functions to restore hover functionality
+    allCurrentElements.forEach(function(el) {
+      if (el) {
+        gsap.set(el, { clearProps: "transform" });
+        
+        // Clear and recreate quickTo functions to prevent "not eligible for reset" errors
+        Object.getOwnPropertyNames(el).forEach(prop => {
+          if (prop.startsWith('_quick_')) {
+            delete el[prop];
+          }
+        });
+      }
+    });
+    console.log('[animations] Cleared transforms and quickTo cache to restore hover functionality');
   });
   
   masterTl.eventCallback("onInterrupt", function() {
@@ -330,6 +405,24 @@ export function animatePlaceFlip(children, pinnedElementData = null) {
   }
   
   console.log('[animations] Place flip animation created - duration:', tl.duration());
+  
+  // Clear transforms when animation completes to restore hover functionality
+  tl.eventCallback("onComplete", function() {
+    console.log('[animations] Place flip animation completed, clearing transforms');
+    children.forEach(function(child) {
+      if (child) {
+        gsap.set(child, { clearProps: "transform" });
+        
+        // Clear and recreate quickTo functions to prevent "not eligible for reset" errors
+        Object.getOwnPropertyNames(child).forEach(prop => {
+          if (prop.startsWith('_quick_')) {
+            delete child[prop];
+          }
+        });
+      }
+    });
+    console.log('[animations] Cleared transforms and quickTo cache to restore hover functionality');
+  });
   
   // Timeline should auto-play by default
   

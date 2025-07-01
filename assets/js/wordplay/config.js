@@ -22,37 +22,38 @@ export const LANG_CLASSES = {
   he: 'lang--he'
 };
 /** Animation Configuration and Helpers **/
+const transitionDuration = 0.6; // 600ms - master timing for page transitions
+
 export const ANIM = {
-  // Base transition duration (for page transitions)
-  transitionDuration: 0.6, // 600ms - master timing for page transitions
+  transitionDuration,
   
-  // All durations as percentages of transitionDuration
-  durations: { 
+  // All durations computed from transitionDuration (in seconds)
+  durations: {
     // Page transition timing
-    transition: 2.0,        // 100% = 600ms (full page transition)
-    header: 0.80,           //  (header animation)
-    fade: 0.20,             // 
+    transition: transitionDuration * 2.0,    // 1.2s (full page transition)
+    header: transitionDuration * 0.80,       // 0.48s (header animation)
+    fade: transitionDuration * 0.20,         // 0.12s (fade animation)
     
     // Word animation phases 
-    animateToPinned: 1.0,   // 100% = 600ms (full U-shape: descend + slide + ascend)
-    pinnedDescend: 0.2,     // 20% = 120ms (down movement)
-    pinnedSlide: 0.6,       // 40% = 240ms (horizontal slide)  
-    pinnedAscend: 0.2,      // 40% = 240ms (up movement)
+    animateToPinned: transitionDuration * 1.0,  // 0.6s (full U-shape: descend + slide + ascend)
+    pinnedDescend: transitionDuration * 0.2,    // 0.12s (down movement)
+    pinnedSlide: transitionDuration * 0.6,      // 0.36s (horizontal slide)  
+    pinnedAscend: transitionDuration * 0.2,     // 0.12s (up movement)
     
     // Return movement
-    animateToPile: 0.5,     // 50% = 300ms (straight movement back to pile)
+    animateToPile: transitionDuration * 0.5,    // 0.3s (straight movement back to pile)
     
     // Other animations
-    hover: 0.5,             // 50% = 300ms
+    hover: 2,            // 0.3s (hover effects)
   },
   
   // Helper functions
   getDuration: (key) => {
-    return ANIM.transitionDuration * ANIM.durations[key];
+    return ANIM.durations[key]; // Already computed in seconds
   },
   
   getDurationMs: (key) => {
-    return ANIM.getDuration(key) * 1000;
+    return ANIM.durations[key] * 1000; // Convert to milliseconds
   },
   
   eases: { 
@@ -64,7 +65,9 @@ export const ANIM = {
   values: { 
     hoverNudge: 3,       // px vertical nudge on pile hover
     dipFactor: 2,        // multiplier × word height for the dip
-  }
+  },
+  
+  // Note: Most complex timing logic removed - global coordinator handles coordination now
 };
 export const BREAKPOINTS = {
   mobile: "(max-width: 600px)"

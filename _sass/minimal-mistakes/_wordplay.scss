@@ -158,3 +158,15 @@ html.lang--he .word .en { display: none; }
 .zone-pinned {
   visibility: hidden;
 }
+
+/* Prevent interactions during page transitions - industry standard approach */
+.is-transitioning {
+  pointer-events: none !important;
+  cursor: progress !important;
+  
+  /* Allow specific elements to remain interactive during transitions if needed */
+  .allow-transition-clicks {
+    pointer-events: auto !important;
+    cursor: auto !important;
+  }
+}

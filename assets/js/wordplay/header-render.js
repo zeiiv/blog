@@ -3,6 +3,7 @@ import { SELECTORS, EVENTS, STORAGE_KEYS, CLASSNAMES, BREAKPOINTS } from "./conf
 import { saveOrder, blockInteractions, unblockInteractions } from "./dom-helpers.js";
 import { animatePlaceFlip, animateHeaderFlip, collapsePile, expandPile, animateHoverIn, animateHoverOut } from "./animations.js";
 import { animManager } from "./anim-manager.js";
+import { animationCoordinator } from "./coordinator.js";
 
 // DOM references
 const header = document.querySelector(SELECTORS.header);
@@ -163,33 +164,44 @@ export const initHeaderInteractions = () => {
     };
 
     const onPileClick = e => {  // click handler for pile navigation
-        if (bodyClasses.contains(CLASSNAMES.transitioning)) return;
+        // Atomic lock engagement - if this fails, another click is already processing
+        if (!animationCoordinator.engageLock('Pile click processing')) {
+            console.log('[header-render] Pile click blocked - lock already engaged');
+            return;
+        }
+        
+        // Do NOT release the lock here - let the coordination system manage it
+        
+        // Secondary check for legacy transitioning class
+        if (bodyClasses.contains(CLASSNAMES.transitioning)) {
+            console.log('[header-render] Click blocked - transitioning class active');
+            animationCoordinator.releaseLock();
+            return;
+        }
 
         const link = e.target.closest(SELECTORS.wordLink);
-        if (!link) return;
+        if (!link) {
+            animationCoordinator.releaseLock();
+            return;
+        }
 
         e.preventDefault();            // stop full reload
         e.stopImmediatePropagation();
 
         const slug = link.dataset.id;
-        if (slug === getPinnedSlug()) return;   // no‑op if already pinned
-        
-        
-        // Prevent rapid clicks and check for ongoing animations
-        if (onPileClick.lastClick && Date.now() - onPileClick.lastClick < 800) {
-            console.log('[header-render] Ignoring rapid click');
-            return;
+        if (slug === getPinnedSlug()) {
+            animationCoordinator.releaseLock();
+            return;   // no‑op if already pinned
         }
         
-        // Check if there are ongoing animations
-        if (animManager.timelines.length > 0) {
-            console.log('[header-render] Ignoring click - animations in progress:', animManager.timelines.length);
-            return;
-        }
         
-        onPileClick.lastClick = Date.now();
+        console.log('[header-render] Processing pile click for:', slug);
+        // Lock is already engaged, proceed with animation
 
-        // ---- PREP ----------------------------------------------------------------
+        // Get DOM elements first
+        const pileZone = document.querySelector(SELECTORS.pileZone);
+        const pinnedZone = document.querySelector(SELECTORS.pinnedZone);
+
         // Get current word list from DOM
         const fullWordList = Array.from(pileZone.children)
             .concat(Array.from(pinnedZone.children))
@@ -203,12 +215,21 @@ export const initHeaderInteractions = () => {
         // Word element that was just clicked in the pile
         const selectedEl = fullWordList.find(item => item.id === slug)?.element;
         
-        console.log('[header-render] Pile click elements:', { 
-            slug, 
-            selectedEl: !!selectedEl, 
-            oldEl: !!oldEl,
-            fromElements: [selectedEl, oldEl].filter(Boolean).length
-        });
+        console.log('[header-render] Starting animation for:', slug);
+        
+        // Capture positions EARLY before any DOM changes or hover interference
+        const allCurrentElements = [
+            ...Array.from(pileZone.children),
+            ...Array.from(pinnedZone.children)
+        ];
+        
+        const earlyPositions = allCurrentElements.map(el => ({
+            element: el,
+            id: el.querySelector('a')?.dataset.id,
+            rect: el.getBoundingClientRect()
+        }));
+        
+        console.log('[header-render] Captured early positions for', earlyPositions.length, 'elements');
         
         // Set the current pinned slug as previous for future ordering
         const currentPinned = getPinnedSlug();
@@ -217,60 +238,43 @@ export const initHeaderInteractions = () => {
         }
 
 
-        // ---- ANIMATION PREPARATION -----------------------------------------------
-        // animateHeaderTransition will handle DOM changes and blocking
+        // Start coordinated header animation and page transition
 
         // Shrink the pile immediately so it isn’t hit‑tested during animation
         if (isMobileViewport()) {
             pileZone.dispatchEvent(new Event(EVENTS.PILE_SHRINK));
         }
 
-        // ---- RUN ANIMATION --------------------------------------------------------
-        // High-level orchestration: handles state capture, DOM changes, animation, and navigation
+        // Execute coordinated animation sequence
         animManager.animateHeaderTransition({
             fromElements: [selectedEl, oldEl],
             getToElement: () => pinnedZone.querySelector(SELECTORS.wordItem),
             domChangeCallback: () => renderHeader(slug, false),
+            earlyPositions: earlyPositions, // Pass early-captured positions
             navigationCallback: () => {
                 // Coordinated approach: Navigation starts during animation for visual overlap
                 console.log('[header-render] Starting coordinated navigation during animation');
                 
-                // Add safety flag to prevent rapid navigation
-                sessionStorage.setItem('wordplay-navigating', Date.now().toString());
+                // Global coordinator manages navigation state
+                
+                // Additional safety check before navigation
+                if (!animationCoordinator.isCoordinating()) {
+                    console.warn('[header-render] Coordination lost before navigation, using fallback');
+                    window.location.href = link.href;
+                    return;
+                }
                 
                 if (barba && typeof barba.go === 'function') {
                     try {
                         console.log('[header-render] Barba navigation starting');
-                        
-                        // Enhanced error handling
                         barba.go(link.href);
-                        
-                        // Safety timeout in case barba hangs
-                        setTimeout(() => {
-                            // More accurate check for navigation success
-                            const currentPath = window.location.pathname;
-                            const targetPath = new URL(link.href, window.location.origin).pathname;
-                            if (currentPath !== targetPath) {
-                                console.warn('[header-render] Barba navigation may not have completed:', {
-                                    current: currentPath,
-                                    target: targetPath
-                                });
-                            }
-                        }, 2000); // Reduced timeout
-                        
                     } catch (error) {
                         console.error('[header-render] Barba failed, using fallback navigation:', error);
-                        // Only use fallback if the animation has a chance to establish
-                        setTimeout(() => {
-                            window.location.href = link.href;
-                        }, 200);
+                        window.location.href = link.href;
                     }
                 } else {
                     console.warn('[header-render] Barba not available, using direct navigation');
-                    // Delay direct navigation to let animation establish
-                    setTimeout(() => {
-                        window.location.href = link.href;
-                    }, 200);
+                    window.location.href = link.href;
                 }
             },
             blockElements: [header, pileZone, pinnedZone, placeZone, langToggle]
@@ -279,7 +283,20 @@ export const initHeaderInteractions = () => {
 
     // Handle clicking the "place" static word
     const onPlaceClick = e => {
-        if (bodyClasses.contains(CLASSNAMES.transitioning)) return;
+        // Atomic lock engagement - if this fails, another click is already processing
+        if (!animationCoordinator.engageLock('Place click processing')) {
+            console.log('[header-render] Place click blocked - lock already engaged');
+            return;
+        }
+        
+        // Do NOT release the lock here - let the coordination system manage it
+        
+        // Secondary check for legacy transitioning class
+        if (bodyClasses.contains(CLASSNAMES.transitioning)) {
+            console.log('[header-render] Place click blocked - transitioning class active');
+            animationCoordinator.releaseLock();
+            return;
+        }
         
         console.log('[header-render] Place click detected - current URL:', window.location.pathname);
         
@@ -298,36 +315,39 @@ export const initHeaderInteractions = () => {
         if (window.location.pathname === '/') {
             console.log('[header-render] Already on homepage, just animate header');
             placeZone.dispatchEvent(new Event(EVENTS.PLACE_CLICK));
+            // Lock will be released by the PLACE_CLICK event handler
         } else {
-            console.log('[header-render] Navigating to homepage with animation');
-            placeZone.dispatchEvent(new Event(EVENTS.PLACE_CLICK));
+            console.log('[header-render] Starting coordinated place animation and navigation');
             
-            // Navigate to homepage simultaneously with animation (coordinate timing)
-            setTimeout(() => {
-                // Add CSS class to persist animation across page change
-                const headerElement = document.querySelector(SELECTORS.header);
-                if (headerElement) {
-                    headerElement.classList.add('wordplay-animating');
-                    console.log('[header-render] Added wordplay-animating class for place click persistence');
-                }
-                
-                // Set navigation flag BEFORE starting navigation
-                sessionStorage.setItem('wordplay-navigating', Date.now().toString());
-                console.log('[header-render] Set navigation flag for place click');
-                
-                if (barba && typeof barba.go === 'function') {
-                    try {
-                        console.log('[header-render] Navigating to homepage via barba (coordinated with animation)');
-                        barba.go('/');
-                    } catch (error) {
-                        console.error('[header-render] Barba failed, using fallback:', error);
+            // Create a simple timeline for place animation to coordinate with page transition
+            const placeAnimationTl = gsap.timeline();
+            
+            // Add the place click event trigger to the timeline
+            placeAnimationTl.call(() => {
+                placeZone.dispatchEvent(new Event(EVENTS.PLACE_CLICK));
+            });
+            
+            // Use coordinator for proper synchronization
+            const coordinationId = `place_coord_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
+            
+            animationCoordinator.startCoordination({
+                headerAnimation: placeAnimationTl,
+                pageTransitionTrigger: () => {
+                    if (barba && typeof barba.go === 'function') {
+                        try {
+                            console.log('[header-render] Coordinated navigation to homepage via barba');
+                            barba.go('/');
+                        } catch (error) {
+                            console.error('[header-render] Barba failed, using fallback:', error);
+                            window.location.href = '/';
+                        }
+                    } else {
+                        console.warn('[header-render] Barba not available, using direct navigation');
                         window.location.href = '/';
                     }
-                } else {
-                    console.warn('[header-render] Barba not available, using direct navigation');
-                    window.location.href = '/';
-                }
-            }, 50); // Faster timing for better coordination
+                },
+                coordinationId
+            });
         }
     };
 
@@ -393,11 +413,15 @@ export const initHeaderInteractions = () => {
             tl.eventCallback("onComplete", function() {
                 console.log('[header-render] Place flip completed, unblocking');
                 unblockInteractions(blockEls);
+                // Release the global lock
+                animationCoordinator.releaseLock();
             });
             
             tl.eventCallback("onInterrupt", function() {
                 console.log('[header-render] Place flip interrupted, unblocking');
                 unblockInteractions(blockEls);
+                // Release the global lock
+                animationCoordinator.releaseLock();
             });
             
             console.log('[header-render] Place flip timeline created:', {
